@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VISTA | Predictive Maintenance Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="auth.js"></script>
+    <script>
+        // Verify authentication before loading dashboard
+        if (!isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <h1>VISTA</h1>
+                <p>Railway Maintenance Platform</p>
+            </div>
+            <div class="user-info">
+                <div class="offline-toggle" id="offlineToggle" onclick="toggleOfflineMode()">
+                    <div class="toggle-switch"></div>
+                    <span id="offlineLabel">Online</span>
+                </div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">User</div>
+                    <div class="user-role" id="userRole">Role</div>
+                    <div class="user-hub" id="userHub">Hub</div>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Regional Controller View -->
+            <section id="controllerView" class="view active">
+                <div class="view-header">
+                    <h2>Sector Risk Map - Bangalore Urban</h2>
+                    <div class="view-controls">
+                        <input type="text" id="searchComponent" placeholder="Search component..." class="search-box">
+                        <select id="filterCII" class="filter-select" onchange="filterByCII()">
+                            <option value="">All Status</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High Risk</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="nominal">Nominal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Risk Map -->
+                    <div class="card">
+                        <h3>Sector Overview</h3>
+                        <div id="riskMap" class="risk-map">
+                            <!-- Generated dynamically -->
+                        </div>
+                        <div class="map-legend">
+                            <div><span class="legend-color critical"></span> Critical (0-30)</div>
+                            <div><span class="legend-color high"></span> High Risk (31-55)</div>
+                            <div><span class="legend-color moderate"></span> Moderate (56-75)</div>
+                            <div><span class="legend-color nominal"></span> Nominal (76-100)</div>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics -->
+                    <div class="card">
+                        <h3>Sector Metrics</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-box critical">
+                                <div class="metric-value" id="metricCritical">0</div>
+                                <div class="metric-label">Critical</div>
+                            </div>
+                            <div class="metric-box high">
+                                <div class="metric-value" id="metricHigh">0</div>
+                                <div class="metric-label">High Risk</div>
+                            </div>
+                            <div class="metric-box moderate">
+                                <div class="metric-value" id="metricModerate">0</div>
+                                <div class="metric-label">Moderate</div>
+                            </div>
+                            <div class="metric-box nominal">
+                                <div class="metric-value" id="metricNominal">0</div>
+                                <div class="metric-label">Nominal</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h4>Quick Actions</h4>
+                            <button class="btn-primary" onclick="dispatchAlert()">Dispatch Alert to Hub</button>
+                            <button class="btn-secondary" onclick="viewAnalytics()">View Analytics</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Component List -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Component Status Report</h3>
+                    <div id="componentList" class="component-list">
+                        <!-- Generated dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hub Supervisor View -->
+            <section id="supervisorView" class="view">
+                <div class="view-header">
+                    <h2>Majestic Hub - Engineer Assignment</h2>
+                    <div class="view-controls">
+                        <button class="btn-primary" onclick="assignEngineer()">Assign New Task</button>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Pending Tasks -->
+                    <div class="card">
+                        <h3>Pending Inspections</h3>
+                        <div id="pendingTasks" class="task-list">
+                            <!-- Generated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Available Engineers -->
+                    <div class="card">
+                        <h3>Team Engineers</h3>
+                        <div id="engineerList" class="engineer-list">
+                            <!-- Generated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Assignments -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Active Assignments</h3>
+                    <div id="activeAssignments" class="assignments-table">
+                        <!-- Generated dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Field Engineer View -->
+            <section id="engineerView" class="view">
+                <div class="view-header">
+                    <h2>Field Inspection - Component Details</h2>
+                </div>
+
+                <div class="card">
+                    <h3>Assigned Component</h3>
+                    <div id="componentDetail" class="component-detail">
+                        <!-- Generated dynamically -->
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Inspection Form -->
+                    <div class="card">
+                        <h3>Inspection Checklist</h3>
+                        <form id="inspectionForm" class="inspection-form">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox"> Visual Crack Detection
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox"> Rust/Corrosion Check
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox"> Displacement Test
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox"> Vibration Data Captured
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="photoUpload">Upload Photo for AI Analysis:</label>
+                                <input type="file" id="photoUpload" accept="image/*">
+                            </div>
+                            <button type="button" class="btn-primary" onclick="submitInspection()">Submit Inspection & Sync</button>
+                        </form>
+                    </div>
+
+                    <!-- AI Analysis -->
+                    <div class="card">
+                        <h3>Gemini AI Verification</h3>
+                        <div id="aiAnalysis" class="ai-analysis">
+                            <p style="color: #999;">Upload a photo to trigger AI analysis</p>
+                        </div>
+                        <!-- Truth Check Section (hidden until AI result) -->
+                        <div id="truthCheckSection" class="truth-check-section" style="display: none;">
+                            <p><strong>Human-in-the-Loop:</strong> Do you disagree with the AI assessment?</p>
+                            <button class="btn-danger" onclick="triggerTruthCheck()">Disagree with AI (Calibration Event)</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal for Dispatch Alert -->
+        <div id="dispatchModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('dispatchModal')">&times;</span>
+                <h2>Dispatch Maintenance Alert</h2>
+                <form id="dispatchForm" class="form">
+                    <div class="form-group">
+                        <label>Select Hub:</label>
+                        <select required>
+                            <option>Majestic Hub</option>
+                            <option>Yeshwantpur Hub</option>
+                            <option>KR Puram Hub</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority Level:</label>
+                        <select required>
+                            <option>CRITICAL - Immediate Action</option>
+                            <option>HIGH - 48-72 Hours</option>
+                            <option>MODERATE - Next Cycle</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes:</label>
+                        <textarea placeholder="Additional instructions..." rows="4"></textarea>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="submitDispatch()">Send Alert</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal for Engineer Assignment -->
+        <div id="assignModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('assignModal')">&times;</span>
+                <h2>Assign Task to Engineer</h2>
+                <form id="assignForm" class="form">
+                    <div class="form-group">
+                        <label>Select Engineer:</label>
+                        <select required>
+                            <option>Raj Kumar (EMP-001)</option>
+                            <option>Priya Singh (EMP-002)</option>
+                            <option>Ahmed Hassan (EMP-003)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Component ID:</label>
+                        <select required>
+                            <option>TRK-BNG-MJ-001 (ERC Clip, CII: 25)</option>
+                            <option>TRK-BNG-MJ-002 (Fish Plate, CII: 42)</option>
+                            <option>TRK-BNG-YP-003 (Bolt Assembly, CII: 68)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Deadline:</label>
+                        <input type="date" required>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="submitAssignment()">Assign Task</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

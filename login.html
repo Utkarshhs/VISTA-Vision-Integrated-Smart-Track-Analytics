@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VISTA Login | Railway Maintenance Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333333;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            padding: 0;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+        }
+
+        .logo-text h1 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .logo-text p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            margin: 3px 0 0 0;
+            letter-spacing: 1px;
+        }
+
+        .back-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content */
+        .login-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f0ff 100%);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #ede9fe;
+        }
+
+        .login-logo {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .login-header h1 {
+            color: #7C3AED;
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .login-header p {
+            color: #888888;
+            font-size: 0.95em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #fafafa;
+            border: 1px solid #dddddd;
+            border-radius: 8px;
+            color: #333333;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #7C3AED;
+            box-shadow: 0 0 12px rgba(124, 58, 237, 0.15);
+            background: #ffffff;
+        }
+
+        .form-group input::placeholder {
+            color: #aaaaaa;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: #fff0f0;
+            border: 1px solid #dc2626;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.9em;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #dddddd, transparent);
+        }
+
+        .divider-text {
+            background: #ffffff;
+            padding: 0 10px;
+            color: #999999;
+            font-size: 0.85em;
+            position: relative;
+        }
+
+        .demo-users {
+            background: #fafafa;
+            border: 1px solid #eeeeee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .demo-users table {
+            width: 100%;
+            color: #333333;
+            font-size: 0.9em;
+            border-collapse: collapse;
+        }
+
+        .demo-users table th {
+            padding: 8px;
+            color: #7C3AED;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 2px solid #7C3AED;
+        }
+
+        .demo-users table td {
+            padding: 8px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .demo-users table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .credential-badge {
+            background: #f5f0ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            border: 1px solid #ede9fe;
+        }
+
+        .footer-text {
+            text-align: center;
+            color: #999999;
+            font-size: 0.85em;
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        footer {
+            background: #333333;
+            color: #ffffff;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .header-top {
+                padding: 12px 20px;
+            }
+
+            .login-card {
+                padding: 25px;
+            }
+
+            .login-header h1 {
+                font-size: 1.5em;
+            }
+
+            .login-logo {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-top">
+            <div class="logo-section">
+                <div class="logo-icon" style="font-size:28px;font-weight:700;color:#fff;">VT</div>
+                <div class="logo-text">
+                    <h1>VISTA</h1>
+                    <p>Railway Maintenance Platform</p>
+                </div>
+            </div>
+            <a href="index.html" class="back-link">Back to Home</a>
+        </div>
+    </header>
+
+    <!-- Login Form -->
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="login-card">
+                <!-- Header -->
+                <div class="login-header">
+                    <div class="login-logo" style="font-size:28px;font-weight:700;color:#7C3AED;">VT</div>
+                    <h1>VISTA Platform</h1>
+                    <p>Intelligent Predictive Maintenance</p>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message" id="errorMsg"></div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="userId">User ID</label>
+                        <input 
+                            type="text" 
+                            id="userId" 
+                            placeholder="e.g., test1, test2, test3"
+                            autocomplete="off"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            placeholder="Enter your password"
+                            autocomplete="off"
+                            required
+                        >
+                    </div>
+                    <button type="submit" class="login-btn">Login</button>
+                </form>
+
+                <!-- Demo Credentials -->
+                <div class="divider">
+                    <div class="divider-text">Demo Credentials</div>
+                </div>
+
+                <div class="demo-users">
+                    <table>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Password</th>
+                            <th>Role</th>
+                        </tr>
+                        <tr>
+                            <td><span class="credential-badge">test1</span></td>
+                            <td><span class="credential-badge">password1</span></td>
+                            <td>Regional Controller</td>
+                        </tr>
+                        <tr>
+                            <td><span class="credential-badge">test2</span></td>
+                            <td><span class="credential-badge">password2</span></td>
+                            <td>Hub Supervisor</td>
+                        </tr>
+                        <tr>
+                            <td><span class="credential-badge">test3</span></td>
+                            <td><span class="credential-badge">password3</span></td>
+                            <td>Field Engineer</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="footer-text">
+                    <p>Secure Authentication System</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 VISTA - Railway Maintenance Platform. All rights reserved.</p>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        // Handle Login
+        function handleLogin(event) {
+            event.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            // Clear previous error
+            errorMsg.classList.remove('show');
+            
+            // Attempt login
+            const result = login(userId, password);
+            
+            if (result.success) {
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                // Show error
+                errorMsg.textContent = result.message;
+                errorMsg.classList.add('show');
+                document.getElementById('password').value = '';
+                document.getElementById('userId').focus();
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // If already logged in, redirect to dashboard
+            if (isAuthenticated()) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        // Focus on input on page load
+        window.addEventListener('load', function() {
+            document.getElementById('userId').focus();
+        });
+    </script>
+</body>
+</html>

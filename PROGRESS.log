@@ -1,0 +1,321 @@
+# RailTrack-AI Development Progress Log
+# Format: [LOG #N] - [TIMESTAMP] - [STATUS]
+
+## LOG #1 - 2026-05-08 [PLANNING]
+### Action: Implement Login Authentication System
+### Tasks to Complete:
+1. Create auth.js - authentication system with user database mapping
+2. Create login.html - login page with user ID input field
+3. Update index.html - add session verification before dashboard loads
+4. Update styles.css - add login page styling
+5. Create user database with roles:
+   - RC-001, RC-002 → Regional Controller
+   - HS-001, HS-002 → Hub Supervisor
+   - FE-001, FE-002, FE-003 → Field Engineer
+6. Implement localStorage for session persistence
+7. Add logout functionality
+
+### Expected Outcome:
+- User lands on login page
+- Enters user ID (e.g., "RC-001")
+- System validates and routes to appropriate dashboard
+- Session persists until logout
+---
+
+## LOG #2 - 2026-05-08 [COMPLETED]
+### Action: Successfully Implemented Login Authentication System
+
+### Files Created:
+1. ✅ auth.js
+   - User database with 7 demo users
+   - Login/logout functions
+   - Session management using localStorage
+   - Role-based access functions
+
+2. ✅ login.html
+   - Clean, modern login UI
+   - User ID input field
+   - Quick-access demo user buttons (clickable)
+   - Auto-redirects if already authenticated
+   - Error message display
+
+### Files Updated:
+1. ✅ index.html
+   - Added auth.js script import
+   - Added session verification check at top
+   - Updated header to show user info (name, role, hub)
+   - Changed "Switch Role" button to "Logout" button
+   - Removed manual role toggle
+
+2. ✅ script.js
+   - Integrated session loading
+   - Removed toggleRole() function
+   - Auto-loads correct view based on user role
+   - Added loadUserInfo() to populate header
+   - Added handleLogout() function
+   - Views now determined by actual login role
+
+3. ✅ styles.css
+   - Added user-details section styling
+   - Added user-name, user-role, user-hub styling
+   - Added btn-logout styling with gradient
+
+### User Mapping Implemented:
+- RC-001 (Rajesh Kumar) → Regional Controller
+- RC-002 (Deepa Sharma) → Regional Controller
+- HS-001 (Vikram Singh) → Hub Supervisor
+- HS-002 (Anjali Patel) → Hub Supervisor
+- FE-001 (Raj Kumar) → Field Engineer
+- FE-002 (Priya Singh) → Field Engineer
+- FE-003 (Ahmed Hassan) → Field Engineer
+
+### Key Features:
+✅ Session-based authentication
+✅ localStorage persistence
+✅ Auto-routing by role
+✅ User info display in header
+✅ Logout functionality
+✅ Invalid user ID error handling
+✅ Quick-access demo buttons
+✅ Redirect protection (login.html if no session)
+
+### Testing:
+- Try RC-001 to access Regional Controller view
+- Try HS-001 to access Hub Supervisor view
+- Try FE-001 to access Field Engineer view
+- Click "Logout" button to return to login page
+---
+
+## LOG #3 - 2026-05-08 [COMPLETED]
+### Action: Simplified User Database & Added Password Authentication
+
+### Files Updated:
+1. ✅ auth.js
+   - Reduced users from 7 to 3 (test1, test2, test3)
+   - Added password field to authentication
+   - Updated login() function to accept both userId and password
+   - New user database:
+     * test1 / password1 → Regional Controller
+     * test2 / password2 → Hub Supervisor
+     * test3 / password3 → Field Engineer
+
+2. ✅ login.html
+   - Added password input field to form
+   - Updated placeholder text to show test1, test2, test3
+   - Replaced demo user buttons with clean credentials table
+   - Table displays: User ID | Password | Role
+   - Password field cleared on login error
+   - Focus returns to User ID field on error
+
+### Key Changes:
+✅ Password authentication now required
+✅ Simplified user base (3 test users only)
+✅ Clean credentials reference table
+✅ Better error handling
+✅ Password field auto-clears on failed attempt
+
+### Testing Credentials:
+Test 1: test1 / password1 (Regional Controller)
+Test 2: test2 / password2 (Hub Supervisor)  
+Test 3: test3 / password3 (Field Engineer)
+---
+
+## LOG #4 - 2026-05-08 [PLANNING]
+### Action: Create Minimalist Landing Page
+### Changes to Make:
+1. Create landing.html - Black background with "VISTA" text only
+2. Minimal styling, centered text
+3. Page entry point before login
+4. No other elements, just the branding
+
+### Design:
+- Full black background (#000000)
+- "VISTA" text in large white font
+- Centered both horizontally and vertically
+- Clean, minimal aesthetic
+
+### Expected Outcome:
+- Users see landing page on initial visit
+- Can navigate to login from here
+---
+
+## LOG #5 - 2026-05-08 [COMPLETED]
+### Action: Created Minimalist Landing Page
+
+### File Created:
+✅ landing.html
+   - Pure black background (#000000)
+   - "VISTA" text in large white font (120px)
+   - Centered both horizontally and vertically
+   - Click to navigate to login
+   - Press Enter/Space to navigate to login
+   - Fade-in animation on load
+   - Hover effect (opacity + glow)
+   - Fully responsive (80px on tablet, 60px on mobile)
+
+### Features:
+✅ Minimalist design - just VISTA text
+✅ Full black background
+✅ Click interaction to go to login
+✅ Keyboard navigation support
+✅ Fade-in animation
+✅ Responsive across devices
+
+### How to Use:
+- Open landing.html as entry point
+- Click "VISTA" or press Enter to go to login.html
+- Or wait for auto-redirect
+
+### File Structure:
+1. landing.html (NEW) → login.html → index.html (dashboard)
+---
+
+## LOG #6 - 2026-05-08 [PLANNING]
+### Action: Add Login Button to Landing Page
+### Changes to Make:
+1. Add "Login" button in top left corner of landing.html
+2. Button should navigate to login.html on click
+3. Style to match minimalist black design
+4. Subtle styling with hover effect
+
+### Expected Outcome:
+- Login button visible in top left corner
+- Clickable navigation to login page
+- Complements minimalist design
+---
+
+## LOG #7 - 2026-05-08 [COMPLETED]
+### Action: Added Login Button to Landing Page
+
+### File Updated:
+✅ landing.html
+   - Added "Login" button to top left corner (30px from top and left)
+   - White background with black text
+   - Fixed positioning (stays in place when scrolling)
+   - Smooth hover effect (slight upward motion + shadow)
+   - Calls goToLogin() function on click
+   - Z-index: 100 (appears above other elements)
+
+### Button Styling:
+- Position: Fixed top-left corner
+- Background: White (#ffffff)
+- Text: Black on white
+- Padding: 10px 25px
+- Border-radius: 5px
+- Hover: Light gray background + slight shadow + upward movement
+- Smooth transitions on all interactions
+
+### Features:
+✅ Easy access to login from landing page
+✅ Minimalist button design fitting black background
+✅ Hover animations for better UX
+✅ Always visible and accessible
+---
+
+## LOG #8 - 2026-05-09 [COMPLETED]
+### Action: Professional UI Redesign (Inspired by Indian Railways)
+
+### Files Updated:
+1. ✅ landing.html
+   - Already had orange/white professional design (completed earlier)
+
+2. ✅ login.html
+   - Redesigned from dark blue theme to orange/white professional style
+   - Added matching header with VISTA branding and "Back to Home" link
+   - White card on warm background with orange accents
+   - Orange gradient login button
+   - Proper table with orange header for demo credentials
+   - Credential badges with warm background
+   - Footer matching landing page style
+
+3. ✅ styles.css
+   - Complete redesign from dark blue (#0f172a) to white/light gray (#f5f5f5) background
+   - Orange (#FF8C00, #FF9500) gradient header replacing dark slate
+   - White cards with subtle shadows instead of dark glassmorphic panels
+   - Orange accent colors for headings, buttons, and interactive elements
+   - Light pastel backgrounds for status indicators (e.g., #fff0f0 for critical)
+   - Added offline toggle styles with red indicator
+   - Added AI processing scan-line animation
+   - Added truth check section styling
+   - Added pulse animation for critical component nodes
+   - Updated scrollbar, modal, and notification to light theme
+   - Professional government-style typography and spacing
+
+4. ✅ index.html
+   - Updated title from "RailTrack-AI" to "VISTA"
+   - Updated header branding from "🚂 RailTrack-AI" to "VISTA"
+   - Added offline toggle switch in header
+   - Added truth check section in engineer view (hidden until AI result)
+
+### Design System Applied:
+- **Primary Color:** Orange (#FF8C00, #FF9500)
+- **Background:** White/Light Gray (#ffffff, #f5f5f5, #fafafa)
+- **Cards:** White with subtle gray borders and shadows
+- **Text:** Dark gray (#333333, #555555)
+- **Status Colors:** Pastel backgrounds (light red, light orange, light yellow, light green)
+- **Professional aesthetic:** Clean, organized, government-style layout
+
+### Key Features:
+✅ Consistent orange/white theme across all pages
+✅ Professional government website aesthetic
+✅ Matching headers with VISTA branding
+✅ Clean typography and spacing
+✅ Responsive design maintained
+---
+
+## LOG #9 - 2026-05-09 [COMPLETED]
+### Action: Implemented Core Features from Implementation Plan
+
+### Bug Fix:
+1. ✅ auth.js
+   - Removed duplicate function definitions (lines 113-186 were duplicates of lines 38-111)
+
+### Features Implemented:
+
+#### 1. CII Calculation with Stress Factors
+- ✅ Implemented `calculateCII()` function using formula: CII = 100 - (Age_Factor + (Load * 1.5) + (Weather_Impact * 2.0))
+- ✅ Added stress factor data to all components: loadGMT, rainfallIndex, thermalGradient
+- ✅ CII scores now dynamically calculated on page load instead of hardcoded
+- ✅ Component detail view shows stress factors and CII formula
+- ✅ Component list shows Load and Rainfall data
+
+#### 2. Offline Mode Toggle
+- ✅ Added toggle switch in dashboard header
+- ✅ Visual indicator: Online (green/white) vs Offline (red)
+- ✅ AI analysis blocked in offline mode with error notification
+- ✅ Sync to cloud blocked in offline mode
+- ✅ Inspection submission shows "saved locally" message in offline mode
+- ✅ Toggle persists across interactions
+
+#### 3. AI Processing Simulation with Delays
+- ✅ 7-step progressive status updates (600ms each, ~4.2s total)
+- ✅ Steps: Uploading → Extracting features → Analyzing patterns → Comparing baseline → Calculating decay → Reasoning → Generating report
+- ✅ Scan-line animation during processing
+- ✅ Image shown at reduced opacity during analysis
+- ✅ Random outcome: ~60% critical, ~40% nominal
+- ✅ Critical override: Gemini can force CII < 30, overriding mathematical prediction
+- ✅ Temporal Delta Analysis in results (Rate of Decay comparison)
+- ✅ Certification report generation
+
+#### 4. Truth Check (Human-in-the-Loop)
+- ✅ "Disagree with AI" button appears after AI analysis
+- ✅ Logs a "Calibration Event" when engineer disagrees
+- ✅ Manual inspection takes precedence over AI
+- ✅ Button hides after calibration event is logged
+- ✅ Styled as danger action (red button) to indicate significance
+
+### Files Updated:
+1. ✅ auth.js - Bug fix (removed duplicates)
+2. ✅ script.js - Complete rewrite with all new features
+3. ✅ index.html - Added offline toggle and truth check HTML
+4. ✅ styles.css - Added new styles for offline toggle, AI processing, truth check
+
+### Key Changes Summary:
+✅ CII = 100 - (Age_Factor + Load*1.5 + Weather*2.0) — dynamic calculation
+✅ Offline toggle blocks AI + Sync features
+✅ AI processing: 7-step progressive simulation with scan-line animation
+✅ Gemini Critical Override: visual detection can force CII < 30
+✅ Truth Check: engineer can disagree and log calibration event
+✅ Pulse animation on critical component nodes
+---
+
