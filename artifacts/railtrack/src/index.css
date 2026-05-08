@@ -55,17 +55,17 @@
   
   --border: 270 25% 18%;
   --input: 270 25% 18%;
-  --ring: 270 80% 65%; /* vivid purple accent */
+  --ring: 0 82% 58%; /* vivid red accent */
   
   --card: 270 25% 7%;
   --card-foreground: 270 20% 97%;
-  --card-border: 270 60% 70% / 0.12;
+  --card-border: 0 60% 55% / 0.15;
   
   --popover: 270 25% 7%;
   --popover-foreground: 270 20% 97%;
-  --popover-border: 270 60% 70% / 0.12;
+  --popover-border: 0 60% 55% / 0.15;
   
-  --primary: 270 80% 65%; /* bright purple */
+  --primary: 0 82% 58%; /* vivid crimson red */
   --primary-foreground: 0 0% 100%;
   
   --secondary: 270 25% 14%;
@@ -74,7 +74,7 @@
   --muted: 270 22% 14%;
   --muted-foreground: 270 15% 58%;
   
-  --accent: 270 80% 65%;
+  --accent: 0 82% 58%;
   --accent-foreground: 0 0% 100%;
   
   --destructive: 0 79% 50%;

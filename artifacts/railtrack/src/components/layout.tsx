@@ -42,9 +42,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Sidebar */}
         <div className="hidden md:flex w-64 flex-col glass-panel border-r border-white/5 relative z-10">
           <div className="p-6">
-            <h1 className="text-2xl font-display font-black text-primary tracking-widest flex items-center gap-2"
-              style={{ textShadow: "0 0 20px hsl(270 80% 65% / 0.6)" }}>
-              <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_hsl(270_80%_65%/0.8)]"></div>
+            <h1 className="text-2xl font-display font-black tracking-widest flex items-center gap-2"
+              style={{ color: "hsl(0 82% 58%)", textShadow: "0 0 24px hsl(0 82% 58% / 0.7), 0 0 48px hsl(0 82% 58% / 0.3)" }}>
+              <div className="w-3 h-3 rounded-full animate-pulse" style={{ background: "hsl(0 82% 58%)", boxShadow: "0 0 10px hsl(0 82% 58% / 0.9)" }}></div>
               VISTA
             </h1>
             <div className="mt-1 text-[9px] text-muted-foreground font-mono leading-tight tracking-wide uppercase">
@@ -93,8 +93,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           
           <header className="h-16 glass-panel border-b border-white/5 flex items-center justify-between px-6 shrink-0 z-10 relative">
             <div className="md:hidden flex items-center">
-              <h1 className="text-xl font-display font-black text-primary tracking-widest"
-                style={{ textShadow: "0 0 16px hsl(270 80% 65% / 0.6)" }}>
+              <h1 className="text-xl font-display font-black tracking-widest"
+                style={{ color: "hsl(0 82% 58%)", textShadow: "0 0 16px hsl(0 82% 58% / 0.7)" }}>
                 VISTA
               </h1>
             </div>

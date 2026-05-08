@@ -39,8 +39,8 @@ export function Splash({ onDone }: SplashProps) {
       }}
     >
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,_rgba(139,92,246,0.15),_transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_50%_50%,_rgba(139,92,246,0.08),_transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,_rgba(220,38,38,0.12),_transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_50%_50%,_rgba(180,20,20,0.07),_transparent)]" />
       </div>
 
       <div className="flex items-center gap-1 md:gap-3 mb-6 relative">
@@ -49,9 +49,9 @@ export function Splash({ onDone }: SplashProps) {
             key={i}
             className="font-display font-black text-7xl md:text-9xl tracking-widest select-none"
             style={{
-              color: "hsl(270 80% 65%)",
+              color: "hsl(0 82% 58%)",
               textShadow: visibleLetters[i]
-                ? "0 0 40px hsl(270 80% 65% / 0.8), 0 0 80px hsl(270 80% 65% / 0.4)"
+                ? "0 0 40px hsl(0 82% 58% / 0.8), 0 0 80px hsl(0 82% 58% / 0.4)"
                 : "none",
               opacity: visibleLetters[i] ? 1 : 0,
               transform: visibleLetters[i] ? "translateY(0) scale(1)" : "translateY(30px) scale(0.8)",
@@ -66,8 +66,8 @@ export function Splash({ onDone }: SplashProps) {
           <div
             className="absolute -bottom-2 left-0 right-0 h-px"
             style={{
-              background: "linear-gradient(90deg, transparent, hsl(270 80% 65%), transparent)",
-              boxShadow: "0 0 12px hsl(270 80% 65% / 0.8)",
+              background: "linear-gradient(90deg, transparent, hsl(0 82% 58%), transparent)",
+              boxShadow: "0 0 12px hsl(0 82% 58% / 0.8)",
               animation: "expandLine 0.5s ease-out forwards",
             }}
           />
