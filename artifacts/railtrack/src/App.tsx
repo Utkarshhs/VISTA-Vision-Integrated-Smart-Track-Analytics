@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { Splash } from "@/components/splash";
 import Dashboard from "@/pages/dashboard";
 import Components from "@/pages/components";
 import Alerts from "@/pages/alerts";
@@ -27,9 +29,12 @@ function Router() {
 }
 
 function App() {
+  const [splashDone, setSplashDone] = useState(false);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        {!splashDone && <Splash onDone={() => setSplashDone(true)} />}
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>

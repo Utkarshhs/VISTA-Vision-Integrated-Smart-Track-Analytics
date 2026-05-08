@@ -42,11 +42,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Sidebar */}
         <div className="hidden md:flex w-64 flex-col glass-panel border-r border-white/5 relative z-10">
           <div className="p-6">
-            <h1 className="text-xl font-display font-bold text-white tracking-widest flex items-center gap-2">
-              <div className="w-4 h-4 bg-primary rounded-sm animate-pulse shadow-[0_0_10px_rgba(0,255,255,0.5)]"></div>
-              RAILTRACK<span className="text-primary">-AI</span>
+            <h1 className="text-2xl font-display font-black text-primary tracking-widest flex items-center gap-2"
+              style={{ textShadow: "0 0 20px hsl(270 80% 65% / 0.6)" }}>
+              <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_hsl(270_80%_65%/0.8)]"></div>
+              VISTA
             </h1>
-            <div className="mt-2 text-xs text-muted-foreground font-mono">BENGALURU METRO CORRIDOR</div>
+            <div className="mt-1 text-[9px] text-muted-foreground font-mono leading-tight tracking-wide uppercase">
+              Vision-Integrated Smart<br />Track Analytics
+            </div>
           </div>
           
           <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
@@ -90,7 +93,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           
           <header className="h-16 glass-panel border-b border-white/5 flex items-center justify-between px-6 shrink-0 z-10 relative">
             <div className="md:hidden flex items-center">
-              <h1 className="text-lg font-display font-bold text-white">RAILTRACK<span className="text-primary">-AI</span></h1>
+              <h1 className="text-xl font-display font-black text-primary tracking-widest"
+                style={{ textShadow: "0 0 16px hsl(270 80% 65% / 0.6)" }}>
+                VISTA
+              </h1>
             </div>
             
             <div className="hidden md:flex items-center text-sm text-muted-foreground">
