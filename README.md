@@ -1,4 +1,4 @@
-# RailTrack-AI
+# VISTA: Vision-Integrated Smart Track Analytics
 **Modernizing track infrastructure through predictive AI, generative vision, and offline-first data syncing.**
 
 ## Project Overview
