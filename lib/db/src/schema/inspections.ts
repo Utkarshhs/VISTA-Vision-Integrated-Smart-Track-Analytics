@@ -16,6 +16,9 @@ export const inspectionsTable = pgTable("inspections", {
   humanOverride: boolean("human_override").notNull().default(false),
   humanOverrideReason: text("human_override_reason"),
   photoUrl: text("photo_url"),
+  engineerFeedback: text("engineer_feedback"),
+  repairAnalysis: text("repair_analysis"),
+  dangerReductionPct: numeric("danger_reduction_pct", { precision: 5, scale: 2 }),
   inspectedAt: timestamp("inspected_at", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

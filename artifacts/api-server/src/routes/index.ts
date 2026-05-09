@@ -8,15 +8,19 @@ import alertsRouter from "./alerts";
 import inspectionsRouter from "./inspections";
 import dashboardRouter from "./dashboard";
 import geminiRouter from "./gemini";
+import authRouter from "./auth";
+import engineerActionsRouter from "./engineer-actions";
 
 const router: IRouter = Router();
 
+router.use(authRouter);
 router.use(healthRouter);
 router.use(sectorsRouter);
 router.use(hubsRouter);
 router.use(engineersRouter);
 router.use(componentsRouter);
 router.use(alertsRouter);
+router.use(engineerActionsRouter);
 router.use(inspectionsRouter);
 router.use(dashboardRouter);
 router.use(geminiRouter);

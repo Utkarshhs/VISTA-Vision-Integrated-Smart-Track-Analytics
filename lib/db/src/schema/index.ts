@@ -7,3 +7,4 @@ export * from "./inspections";
 export * from "./activityLog";
 export * from "./conversations";
 export * from "./messages";
+export * from "./users";
