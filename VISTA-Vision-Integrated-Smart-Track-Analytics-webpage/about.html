@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VISTA - About</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #333333;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            padding: 0;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .logo-text h1 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .logo-text p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            margin: 3px 0 0 0;
+            letter-spacing: 1px;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        nav a.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+        }
+
+        .login-btn-nav {
+            background: #ffffff;
+            color: #7C3AED;
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .login-btn-nav:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* About Hero */
+        .about-hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f0ff 100%);
+            padding: 80px 40px;
+            text-align: center;
+            border-bottom: 3px solid #7C3AED;
+        }
+
+        .about-hero h2 {
+            font-size: 48px;
+            color: #7C3AED;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+
+        .about-hero p {
+            font-size: 18px;
+            color: #666666;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Content Sections */
+        .about-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        .about-section {
+            margin-bottom: 50px;
+        }
+
+        .about-section h3 {
+            color: #7C3AED;
+            font-size: 28px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ede9fe;
+        }
+
+        .about-section p {
+            color: #555555;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .about-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .about-section ul li {
+            padding: 10px 0 10px 25px;
+            color: #555555;
+            font-size: 16px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .about-section ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 18px;
+            width: 10px;
+            height: 10px;
+            background: #7C3AED;
+            border-radius: 50%;
+        }
+
+        /* Team / Roles Cards */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .role-card {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #7C3AED;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.15);
+        }
+
+        .role-card h4 {
+            color: #7C3AED;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .role-card p {
+            color: #666666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Tech Stack */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tech-item {
+            background: #f5f0ff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #ede9fe;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.15);
+        }
+
+        .tech-item h5 {
+            color: #7C3AED;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .tech-item p {
+            color: #777777;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            background: #333333;
+            color: #ffffff;
+            text-align: center;
+            padding: 30px;
+            font-size: 13px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header-top {
+                padding: 12px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .about-hero h2 {
+                font-size: 36px;
+            }
+
+            .about-hero p {
+                font-size: 16px;
+            }
+
+            .about-content {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-top">
+            <div class="logo-section">
+                <div class="logo-icon"></div>
+                <div class="logo-text">
+                    <h1>VISTA</h1>
+                    <p>Railway Maintenance Platform</p>
+                </div>
+            </div>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="about.html" class="active">About</a>
+                <a href="index.html#features">Services</a>
+                <a href="index.html#contact">Contact</a>
+                <button class="login-btn-nav" onclick="window.location.href='login.html'">Login</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- About Hero -->
+    <section class="about-hero">
+        <h2>About VISTA</h2>
+        <p>Intelligent Predictive Maintenance for Railway Infrastructure — built to modernize how Indian Railways monitors, inspects, and maintains critical track components.</p>
+    </section>
+
+    <!-- Content -->
+    <div class="about-content">
+        <!-- Vision -->
+        <div class="about-section">
+            <h3>Our Vision</h3>
+            <p>VISTA (Visual Intelligence for Structural Track Assessment) is a centralized web dashboard designed to simulate and demonstrate how AI-powered predictive maintenance can transform railway infrastructure management.</p>
+            <p>The platform addresses a critical gap: traditional railway inspections are manual, reactive, and prone to human error. VISTA introduces a data-driven, AI-augmented workflow that predicts component failures before they happen — reducing derailment risk, minimizing downtime, and optimizing resource allocation.</p>
+        </div>
+
+        <!-- Core USP -->
+        <div class="about-section">
+            <h3>Core USP: Offline-First Resilience</h3>
+            <p>Railway field engineers often operate in remote areas with zero or unreliable connectivity. VISTA is designed with an offline-first architecture that ensures full inspection and data capture capability without an internet connection. Data syncs automatically when connectivity is restored.</p>
+            <ul>
+                <li>Full inspection workflow available offline</li>
+                <li>Local data storage with automatic cloud sync</li>
+                <li>AI analysis queued and processed upon reconnection</li>
+                <li>No data loss during connectivity gaps</li>
+            </ul>
+        </div>
+
+        <!-- Hierarchical Roles -->
+        <div class="about-section">
+            <h3>Hierarchical User Roles</h3>
+            <p>VISTA implements a three-tier role hierarchy mirroring Indian Railways' operational structure, ensuring the right information reaches the right personnel.</p>
+            <div class="roles-grid">
+                <div class="role-card">
+                    <h4>Regional Controller</h4>
+                    <p>Oversees the entire sector's risk map. Views aggregated CII scores across all hubs, dispatches maintenance alerts, and monitors sector-wide metrics and trends.</p>
+                </div>
+                <div class="role-card">
+                    <h4>Hub Supervisor</h4>
+                    <p>Manages engineer assignments at the hub level. Prioritizes inspection tasks, assigns field engineers to high-risk components, and tracks active assignments.</p>
+                </div>
+                <div class="role-card">
+                    <h4>Field Engineer</h4>
+                    <p>On-ground inspector who performs physical inspections, uploads photos for AI analysis, and can override AI assessments via the Truth Check calibration system.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Architecture -->
+        <div class="about-section">
+            <h3>Data & AI Architecture</h3>
+            <p>VISTA employs a dual-AI approach combining mathematical prediction with visual verification:</p>
+            <ul>
+                <li><strong>CII (Component Integrity Index):</strong> A 0-100 score calculated from stress factors — age, load (GMT), rainfall index, and thermal gradient. Scores below 30 trigger critical alerts.</li>
+                <li><strong>Gemini AI Vision:</strong> Photo-based damage verification that can override mathematical CII predictions when visual evidence of critical damage is detected.</li>
+                <li><strong>Temporal Delta Analysis:</strong> Tracks rate of decay between inspection cycles to detect acceleration in component degradation.</li>
+                <li><strong>Truth Check (Human-in-the-Loop):</strong> Field engineers can disagree with AI assessments, logging calibration events for model improvement.</li>
+            </ul>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="about-section">
+            <h3>Technology Stack</h3>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <h5>TensorFlow</h5>
+                    <p>Remaining useful life prediction models</p>
+                </div>
+                <div class="tech-item">
+                    <h5>Gemini API</h5>
+                    <p>Visual damage detection and verification</p>
+                </div>
+                <div class="tech-item">
+                    <h5>Service Workers</h5>
+                    <p>Offline-first data persistence</p>
+                </div>
+                <div class="tech-item">
+                    <h5>Cloud Sync</h5>
+                    <p>Real-time data synchronization</p>
+                </div>
+                <div class="tech-item">
+                    <h5>IndexedDB</h5>
+                    <p>Local storage for offline operation</p>
+                </div>
+                <div class="tech-item">
+                    <h5>Web Dashboard</h5>
+                    <p>Centralized monitoring interface</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployment -->
+        <div class="about-section">
+            <h3>Deployment Strategy</h3>
+            <p>VISTA follows a phased deployment approach. The current phase (Phase 1) delivers a centralized web dashboard simulation that demonstrates the full workflow — from risk monitoring to AI-assisted inspection to human verification.</p>
+            <ul>
+                <li><strong>Phase 1 (Current):</strong> Centralized Web Dashboard — simulation of the complete predictive maintenance workflow</li>
+                <li><strong>Phase 2 (Planned):</strong> Native Field App — offline-capable mobile application for field engineers</li>
+                <li><strong>Phase 3 (Planned):</strong> Production Deployment — integration with live railway data feeds and real sensor networks</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <p>&copy; 2026 VISTA - Railway Maintenance Platform. All rights reserved.</p>
+        <p>Designed for modernizing railway infrastructure management</p>
+    </footer>
+</body>
+</html>
