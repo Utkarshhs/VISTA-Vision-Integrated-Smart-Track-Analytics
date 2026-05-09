@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VISTA Login | Railway Maintenance Platform</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,10 +14,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 25%),
-                        radial-gradient(circle at bottom right, rgba(109, 40, 217, 0.16), transparent 18%),
-                        #05060b;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, rgba(230, 43, 43, 0.18), transparent 25%),
+                        radial-gradient(circle at bottom right, rgba(185, 28, 28, 0.16), transparent 18%),
+                        hsl(270, 28%, 5%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -25,9 +27,10 @@
 
         /* Header */
         header {
-            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             padding: 0;
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -51,11 +54,13 @@
         }
 
         .logo-text h1 {
-            color: #ffffff;
+            color: #e62b2b;
             font-size: 28px;
-            font-weight: 700;
+            font-weight: 900;
             letter-spacing: 2px;
             margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 16px rgba(230, 43, 43, 0.7);
         }
 
         .logo-text p {
@@ -77,7 +82,7 @@
         }
 
         .back-link:hover {
-            background: rgba(124, 58, 237, 0.2);
+            background: rgba(230, 43, 43, 0.2);
         }
 
         .login-wrapper {
@@ -86,7 +91,7 @@
             justify-content: center;
             align-items: center;
             padding: 40px 20px;
-            background: rgba(124, 58, 237, 0.12);
+            background: rgba(230, 43, 43, 0.12);
             backdrop-filter: blur(20px);
             border-radius: 24px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
@@ -131,10 +136,12 @@
         }
 
         .login-header h1 {
-            color: #7C3AED;
+            color: #e62b2b;
             font-size: 1.8em;
             margin-bottom: 8px;
             letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
         }
 
         .login-header p {
@@ -167,9 +174,9 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #7C3AED;
-            box-shadow: 0 0 12px rgba(124, 58, 237, 0.15);
-            background: rgba(124, 58, 237, 0.16);
+            border-color: #e62b2b;
+            box-shadow: 0 0 12px rgba(230, 43, 43, 0.15);
+            background: rgba(230, 43, 43, 0.16);
         }
 
         .form-group input::placeholder {
@@ -179,7 +186,7 @@
         .login-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            background: linear-gradient(135deg, #e62b2b 0%, #b91c1c 100%);
             border: none;
             border-radius: 8px;
             color: white;
@@ -193,7 +200,7 @@
 
         .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+            box-shadow: 0 8px 20px rgba(230, 43, 43, 0.35);
         }
 
         .login-btn:active {
@@ -222,71 +229,7 @@
             75% { transform: translateX(10px); }
         }
 
-        .divider {
-            text-align: center;
-            margin: 25px 0;
-            position: relative;
-        }
 
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.5), transparent);
-        }
-
-        .divider-text {
-            background: rgba(124, 58, 237, 0.16);
-            padding: 0 10px;
-            color: #d1d5db;
-            font-size: 0.85em;
-            position: relative;
-        }
-
-        .demo-users {
-            background: rgba(124, 58, 237, 0.08);
-            border: 1px solid rgba(124, 58, 237, 0.25);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-
-        .demo-users table {
-            width: 100%;
-            color: #e5e7eb;
-            font-size: 0.9em;
-            border-collapse: collapse;
-        }
-
-        .demo-users table th {
-            padding: 8px;
-            color: #7C3AED;
-            font-weight: 600;
-            text-align: left;
-            border-bottom: 2px solid #7C3AED;
-        }
-
-        .demo-users table td {
-            padding: 8px;
-            border-bottom: 1px solid rgba(124, 58, 237, 0.25);
-        }
-
-        .demo-users table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .credential-badge {
-            background: rgba(124, 58, 237, 0.18);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            border: 1px solid rgba(124, 58, 237, 0.35);
-            color: #e5e7eb;
-        }
 
         .footer-text {
             text-align: center;
@@ -344,7 +287,7 @@
             <div class="login-card">
                 <!-- Header -->
                 <div class="login-header">
-                    <div class="login-logo" style="font-size:28px;font-weight:700;color:#7C3AED;"></div>
+                    <div class="login-logo" style="font-size:28px;font-weight:700;color:#e62b2b;"></div>
                     <h1>VISTA Platform</h1>
                     <p>Intelligent Predictive Maintenance</p>
                 </div>
@@ -377,65 +320,7 @@
                     <button type="submit" class="login-btn">Login</button>
                 </form>
 
-                <!-- Demo Credentials -->
-                <div class="divider">
-                    <div class="divider-text">Demo Credentials</div>
-                </div>
 
-                <div class="demo-users">
-                    <table>
-                        <tr>
-                            <th>User ID</th>
-                            <th>Password</th>
-                            <th>Role</th>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">test1</span></td>
-                            <td><span class="credential-badge">password1</span></td>
-                            <td>Regional Controller</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">test2</span></td>
-                            <td><span class="credential-badge">password2</span></td>
-                            <td>Hub Supervisor (Majestic)</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">test3</span></td>
-                            <td><span class="credential-badge">password3</span></td>
-                            <td>Hub Supervisor (Yeshwantpur)</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">arjun</span></td>
-                            <td><span class="credential-badge">eng123</span></td>
-                            <td>Field Engineer</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">priya</span></td>
-                            <td><span class="credential-badge">eng123</span></td>
-                            <td>Field Engineer</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">vikram</span></td>
-                            <td><span class="credential-badge">eng123</span></td>
-                            <td>Field Engineer</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">kavitha</span></td>
-                            <td><span class="credential-badge">eng123</span></td>
-                            <td>Field Engineer</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">suresh</span></td>
-                            <td><span class="credential-badge">eng123</span></td>
-                            <td>Field Engineer</td>
-                        </tr>
-                        <tr>
-                            <td><span class="credential-badge">deepak</span></td>
-                            <td><span class="credential-badge">eng123</span></td>
-                            <td>Field Engineer</td>
-                        </tr>
-                    </table>
-                </div>
 
                 <div class="footer-text">
                     <p>Secure Authentication System</p>

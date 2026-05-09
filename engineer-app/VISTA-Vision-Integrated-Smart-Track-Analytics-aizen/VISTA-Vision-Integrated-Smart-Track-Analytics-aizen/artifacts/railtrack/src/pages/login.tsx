@@ -23,7 +23,6 @@ const CREDENTIALS: Record<string, { password: string; role: "railway" | "enginee
 };
 
 export default function Login() {
-  const [tab, setTab] = useState<"railway" | "engineer">("railway");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -48,8 +47,8 @@ export default function Login() {
       setLoading(false);
       return;
     }
-    if (cred.role !== tab) {
-      setError(`This account is registered as "${cred.role}", not "${tab}".`);
+    if (cred.role !== "engineer") {
+      setError(`This account is not authorized for field engineering.`);
       setLoading(false);
       return;
     }
@@ -61,13 +60,8 @@ export default function Login() {
       engineerId: 1,
       engineerName: cred.engineerName ?? key,
     });
-    navigate(cred.role === "railway" ? "/railway" : "/engineer");
+    navigate("/engineer");
     setLoading(false);
-  };
-
-  const fillDemo = () => {
-    if (tab === "railway") { setUsername("railway"); setPassword("railway123"); }
-    else { setUsername("arjun"); setPassword("eng123"); }
   };
 
   return (
@@ -89,21 +83,13 @@ export default function Login() {
         </div>
 
         <div className="bg-white/3 border border-white/8 rounded-xl p-6 backdrop-blur-sm">
-          <div className="flex rounded-lg overflow-hidden border border-white/10 mb-6">
-            {(["railway", "engineer"] as const).map((r) => (
-              <button key={r} onClick={() => { setTab(r); setError(""); setUsername(""); setPassword(""); }}
-                className={`flex-1 py-2.5 text-sm font-display font-semibold tracking-wider uppercase transition-all ${tab === r ? "text-white" : "text-muted-foreground hover:text-white/70"}`}
-                style={tab === r ? { background: "hsl(0 82% 58% / 0.2)", borderBottom: "2px solid hsl(0 82% 58%)" } : {}}>
-                {r === "railway" ? "Railway" : "Engineer"}
-              </button>
-            ))}
-          </div>
+
 
           <div className="space-y-4">
             <div>
               <label className="text-xs text-muted-foreground font-mono uppercase tracking-wider block mb-1.5">Username</label>
               <Input value={username} onChange={e => setUsername(e.target.value)}
-                placeholder={tab === "railway" ? "railway" : "e.g. arjun"}
+                placeholder={"e.g. arjun"}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary"
                 onKeyDown={e => e.key === "Enter" && handleLogin()} />
             </div>
@@ -122,15 +108,8 @@ export default function Login() {
               {loading ? "Authenticating..." : "Access System"}
             </Button>
 
-            <button onClick={fillDemo} className="w-full text-xs text-muted-foreground hover:text-white/50 font-mono transition-colors text-center">
-              Fill demo credentials
-            </button>
           </div>
         </div>
-
-        <p className="text-center text-[10px] text-muted-foreground/40 font-mono mt-6 tracking-wider">
-          {tab === "railway" ? "user: railway / pass: railway123" : "Majestic: priya, kavitha, raj, ananya, rohan · Yeshwantpur: suresh, deepak, meena · KR Puram: kiran, aditya / pass: eng123"}
-        </p>
       </div>
     </div>
   );

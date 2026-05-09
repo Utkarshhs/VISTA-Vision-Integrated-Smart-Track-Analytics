@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VISTA - Railway Maintenance Platform</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,10 +14,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 25%),
-                        radial-gradient(circle at bottom right, rgba(109, 40, 217, 0.16), transparent 18%),
-                        #05060b;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, rgba(230, 43, 43, 0.18), transparent 25%),
+                        radial-gradient(circle at bottom right, rgba(185, 28, 28, 0.16), transparent 18%),
+                        hsl(270, 28%, 5%);
             color: #e5e7eb;
             min-height: 100vh;
             background-attachment: fixed;
@@ -23,7 +25,9 @@
 
         /* Header Navigation */
         header {
-            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             padding: 0;
             box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
             position: sticky;
@@ -50,11 +54,13 @@
         }
 
         .logo-text h1 {
-            color: #ffffff;
+            color: #e62b2b;
             font-size: 28px;
-            font-weight: 700;
+            font-weight: 900;
             letter-spacing: 2px;
             margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 16px rgba(230, 43, 43, 0.7);
         }
 
         .logo-text p {
@@ -86,7 +92,7 @@
 
         .login-btn-nav {
             background: #ffffff;
-            color: #7C3AED;
+            color: #e62b2b;
             padding: 10px 25px;
             border-radius: 5px;
             font-weight: 600;
@@ -107,16 +113,18 @@
             backdrop-filter: blur(20px);
             padding: 80px 40px;
             text-align: center;
-            border-bottom: 3px solid rgba(124, 58, 237, 0.55);
+            border-bottom: 3px solid rgba(230, 43, 43, 0.55);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
         }
 
         .hero-content h2 {
             font-size: 48px;
-            color: #7C3AED;
+            color: #e62b2b;
             margin-bottom: 20px;
-            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
             letter-spacing: 3px;
+            text-shadow: 0 0 16px rgba(230, 43, 43, 0.7);
         }
 
         .hero-content p {
@@ -130,7 +138,7 @@
         }
 
         .cta-button {
-            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            background: linear-gradient(135deg, #e62b2b 0%, #b91c1c 100%);
             color: #ffffff;
             padding: 15px 50px;
             border: none;
@@ -139,13 +147,13 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 6px 20px rgba(230, 43, 43, 0.3);
             display: inline-block;
         }
 
         .cta-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 10px 30px rgba(230, 43, 43, 0.4);
         }
 
         .cta-button:active {
@@ -160,7 +168,7 @@
 
         .features h3 {
             text-align: center;
-            color: #7C3AED;
+            color: #e62b2b;
             font-size: 32px;
             margin-bottom: 50px;
             font-weight: 700;
@@ -178,18 +186,18 @@
             background: #f9f9f9;
             padding: 30px;
             border-radius: 8px;
-            border-left: 4px solid #7C3AED;
+            border-left: 4px solid #e62b2b;
             transition: all 0.3s ease;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.15);
+            box-shadow: 0 8px 20px rgba(230, 43, 43, 0.15);
         }
 
         .feature-card h4 {
-            color: #7C3AED;
+            color: #e62b2b;
             margin-bottom: 12px;
             font-size: 18px;
         }

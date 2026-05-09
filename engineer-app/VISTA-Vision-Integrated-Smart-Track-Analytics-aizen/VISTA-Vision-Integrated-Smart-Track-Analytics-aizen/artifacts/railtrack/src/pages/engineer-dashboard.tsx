@@ -341,7 +341,7 @@ export default function EngineerDashboard() {
                   <p className="text-xs text-muted-foreground/50 mt-1">JPG, PNG up to 10MB</p>
                 </div>
               )}
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+              <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
 
               {/* AI Analysis Section — only shown after photo is uploaded */}
               {analyzing && (
