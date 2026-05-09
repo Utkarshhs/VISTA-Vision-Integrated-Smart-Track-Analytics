@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  vista-backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker-setup/Dockerfile
+    container_name: vista-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.example
+    environment:
+      - PORT=3000
+    volumes:
+      - ../backend/data:/app/data
+    restart: unless-stopped

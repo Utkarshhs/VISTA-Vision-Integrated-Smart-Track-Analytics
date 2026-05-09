@@ -1,0 +1,1068 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: RailTrack-AI Predictive Maintenance API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: components
+    description: Track component operations
+  - name: sectors
+    description: Sector and location operations
+  - name: hubs
+    description: Hub and station operations
+  - name: engineers
+    description: Field engineer operations
+  - name: alerts
+    description: Dispatch alert operations
+  - name: inspections
+    description: Inspection and maintenance records
+  - name: dashboard
+    description: Dashboard aggregate and summary endpoints
+  - name: gemini
+    description: Gemini AI vision analysis operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /sectors:
+    get:
+      operationId: listSectors
+      tags: [sectors]
+      summary: List all sectors
+      responses:
+        "200":
+          description: List of sectors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sector"
+    post:
+      operationId: createSector
+      tags: [sectors]
+      summary: Create a sector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSectorBody"
+      responses:
+        "201":
+          description: Created sector
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sector"
+
+  /sectors/{id}:
+    get:
+      operationId: getSector
+      tags: [sectors]
+      summary: Get a sector by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sector
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sector"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /hubs:
+    get:
+      operationId: listHubs
+      tags: [hubs]
+      summary: List all hubs
+      responses:
+        "200":
+          description: List of hubs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Hub"
+    post:
+      operationId: createHub
+      tags: [hubs]
+      summary: Create a hub
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHubBody"
+      responses:
+        "201":
+          description: Created hub
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hub"
+
+  /hubs/{id}:
+    get:
+      operationId: getHub
+      tags: [hubs]
+      summary: Get a hub by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Hub
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hub"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /engineers:
+    get:
+      operationId: listEngineers
+      tags: [engineers]
+      summary: List all field engineers
+      responses:
+        "200":
+          description: List of engineers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Engineer"
+    post:
+      operationId: createEngineer
+      tags: [engineers]
+      summary: Create an engineer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEngineerBody"
+      responses:
+        "201":
+          description: Created engineer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Engineer"
+
+  /components:
+    get:
+      operationId: listComponents
+      tags: [components]
+      summary: List track components with optional filters
+      parameters:
+        - name: hubId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: sectorId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: List of components
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrackComponent"
+    post:
+      operationId: createComponent
+      tags: [components]
+      summary: Create a track component
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateComponentBody"
+      responses:
+        "201":
+          description: Created component
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackComponent"
+
+  /components/{id}:
+    get:
+      operationId: getComponent
+      tags: [components]
+      summary: Get a track component by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Track component
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackComponent"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateComponent
+      tags: [components]
+      summary: Update a track component CII score or status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateComponentBody"
+      responses:
+        "200":
+          description: Updated component
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackComponent"
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List dispatch alerts
+      parameters:
+        - name: hubId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+    post:
+      operationId: createAlert
+      tags: [alerts]
+      summary: Dispatch a new maintenance alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAlertBody"
+      responses:
+        "201":
+          description: Created alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}:
+    get:
+      operationId: getAlert
+      tags: [alerts]
+      summary: Get an alert by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateAlert
+      tags: [alerts]
+      summary: Update alert status or assignment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAlertBody"
+      responses:
+        "200":
+          description: Updated alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /inspections:
+    get:
+      operationId: listInspections
+      tags: [inspections]
+      summary: List inspection records
+      parameters:
+        - name: componentId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: engineerId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of inspections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inspection"
+    post:
+      operationId: createInspection
+      tags: [inspections]
+      summary: Create an inspection record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInspectionBody"
+      responses:
+        "201":
+          description: Created inspection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inspection"
+
+  /inspections/{id}:
+    get:
+      operationId: getInspection
+      tags: [inspections]
+      summary: Get an inspection by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Inspection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inspection"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get sector-wide summary stats for the controller view
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/cii-distribution:
+    get:
+      operationId: getCiiDistribution
+      tags: [dashboard]
+      summary: Get CII score distribution grouped by status category
+      responses:
+        "200":
+          description: CII distribution
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CiiDistributionItem"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent maintenance and inspection activity feed
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/hub-status:
+    get:
+      operationId: getHubStatus
+      tags: [dashboard]
+      summary: Get per-hub component health breakdown
+      responses:
+        "200":
+          description: Hub status list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HubStatus"
+
+  /gemini/analyze-component:
+    post:
+      operationId: analyzeComponent
+      tags: [gemini]
+      summary: Analyze a track component photo with Gemini Vision and return a CII assessment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeComponentBody"
+      responses:
+        "200":
+          description: Gemini vision analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeComponentResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Sector:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - city
+        - latitude
+        - longitude
+        - createdAt
+
+    CreateSectorBody:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - name
+        - city
+        - latitude
+        - longitude
+
+    Hub:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        sectorId:
+          type: integer
+        location:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - sectorId
+        - location
+        - latitude
+        - longitude
+        - createdAt
+
+    CreateHubBody:
+      type: object
+      properties:
+        name:
+          type: string
+        sectorId:
+          type: integer
+        location:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - name
+        - sectorId
+        - location
+        - latitude
+        - longitude
+
+    Engineer:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        employeeId:
+          type: string
+        hubId:
+          type: integer
+        status:
+          type: string
+          description: "available | on_mission | offline"
+        specialization:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - employeeId
+        - hubId
+        - status
+        - specialization
+        - createdAt
+
+    CreateEngineerBody:
+      type: object
+      properties:
+        name:
+          type: string
+        employeeId:
+          type: string
+        hubId:
+          type: integer
+        status:
+          type: string
+        specialization:
+          type: string
+      required:
+        - name
+        - employeeId
+        - hubId
+        - status
+        - specialization
+
+    TrackComponent:
+      type: object
+      properties:
+        id:
+          type: integer
+        componentId:
+          type: string
+          description: Human-readable ID like TRK-BNG-MJ-001
+        type:
+          type: string
+          description: "ERC Clip | Rail Joint | Fish Plate | Sleeper | Ballast | Signal Cable"
+        hubId:
+          type: integer
+        sectorId:
+          type: integer
+        ageMonths:
+          type: integer
+        lastInspection:
+          type: ["string", "null"]
+          format: date-time
+        ciiScore:
+          type: number
+        ciiStatus:
+          type: string
+          description: "NOMINAL | MODERATE | HIGH_RISK | CRITICAL"
+        loadStress:
+          type: number
+          description: Average tonnage (GMT)
+        rainfallIndex:
+          type: number
+          description: Corrosion factor 0-1
+        thermalGradient:
+          type: number
+          description: Heat cycles
+        latitude:
+          type: number
+        longitude:
+          type: number
+        location:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - componentId
+        - type
+        - hubId
+        - sectorId
+        - ageMonths
+        - ciiScore
+        - ciiStatus
+        - loadStress
+        - rainfallIndex
+        - thermalGradient
+        - latitude
+        - longitude
+        - location
+        - createdAt
+
+    CreateComponentBody:
+      type: object
+      properties:
+        componentId:
+          type: string
+        type:
+          type: string
+        hubId:
+          type: integer
+        sectorId:
+          type: integer
+        ageMonths:
+          type: integer
+        loadStress:
+          type: number
+        rainfallIndex:
+          type: number
+        thermalGradient:
+          type: number
+        latitude:
+          type: number
+        longitude:
+          type: number
+        location:
+          type: string
+      required:
+        - componentId
+        - type
+        - hubId
+        - sectorId
+        - ageMonths
+        - loadStress
+        - rainfallIndex
+        - thermalGradient
+        - latitude
+        - longitude
+        - location
+
+    UpdateComponentBody:
+      type: object
+      properties:
+        ciiScore:
+          type: ["number", "null"]
+        ciiStatus:
+          type: ["string", "null"]
+        lastInspection:
+          type: ["string", "null"]
+          format: date-time
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        componentId:
+          type: integer
+        hubId:
+          type: integer
+        engineerId:
+          type: ["integer", "null"]
+        priority:
+          type: string
+          description: "EMERGENCY | PRIORITY | ROUTINE"
+        status:
+          type: string
+          description: "PENDING | DISPATCHED | IN_PROGRESS | RESOLVED | CANCELLED"
+        notes:
+          type: ["string", "null"]
+        dispatchedAt:
+          type: ["string", "null"]
+          format: date-time
+        resolvedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - componentId
+        - hubId
+        - priority
+        - status
+        - createdAt
+
+    CreateAlertBody:
+      type: object
+      properties:
+        componentId:
+          type: integer
+        hubId:
+          type: integer
+        engineerId:
+          type: ["integer", "null"]
+        priority:
+          type: string
+        notes:
+          type: ["string", "null"]
+      required:
+        - componentId
+        - hubId
+        - priority
+
+    UpdateAlertBody:
+      type: object
+      properties:
+        status:
+          type: ["string", "null"]
+        engineerId:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+
+    Inspection:
+      type: object
+      properties:
+        id:
+          type: integer
+        componentId:
+          type: integer
+        engineerId:
+          type: integer
+        alertId:
+          type: ["integer", "null"]
+        outcome:
+          type: string
+          description: "CERTIFIED_HEALTHY | FLAGGED_MODERATE | FLAGGED_CRITICAL | REPLACEMENT_REQUIRED"
+        geminiAnalysis:
+          type: ["string", "null"]
+        geminiCiiOverride:
+          type: ["number", "null"]
+        humanOverride:
+          type: boolean
+        humanOverrideReason:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        inspectedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - componentId
+        - engineerId
+        - outcome
+        - humanOverride
+        - inspectedAt
+        - createdAt
+
+    CreateInspectionBody:
+      type: object
+      properties:
+        componentId:
+          type: integer
+        engineerId:
+          type: integer
+        alertId:
+          type: ["integer", "null"]
+        outcome:
+          type: string
+        geminiAnalysis:
+          type: ["string", "null"]
+        geminiCiiOverride:
+          type: ["number", "null"]
+        humanOverride:
+          type: boolean
+        humanOverrideReason:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        inspectedAt:
+          type: string
+          format: date-time
+      required:
+        - componentId
+        - engineerId
+        - outcome
+        - humanOverride
+        - inspectedAt
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalComponents:
+          type: integer
+        criticalCount:
+          type: integer
+        highRiskCount:
+          type: integer
+        moderateCount:
+          type: integer
+        nominalCount:
+          type: integer
+        activeAlerts:
+          type: integer
+        resolvedToday:
+          type: integer
+        inspectionsToday:
+          type: integer
+        avgCiiScore:
+          type: number
+        onlineEngineers:
+          type: integer
+      required:
+        - totalComponents
+        - criticalCount
+        - highRiskCount
+        - moderateCount
+        - nominalCount
+        - activeAlerts
+        - resolvedToday
+        - inspectionsToday
+        - avgCiiScore
+        - onlineEngineers
+
+    CiiDistributionItem:
+      type: object
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+      required:
+        - status
+        - count
+        - percentage
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          description: "alert_created | inspection_done | gemini_analysis | human_override | alert_resolved"
+        componentId:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - componentId
+        - description
+        - severity
+        - timestamp
+
+    HubStatus:
+      type: object
+      properties:
+        hubId:
+          type: integer
+        hubName:
+          type: string
+        totalComponents:
+          type: integer
+        criticalCount:
+          type: integer
+        highRiskCount:
+          type: integer
+        avgCiiScore:
+          type: number
+        activeAlerts:
+          type: integer
+      required:
+        - hubId
+        - hubName
+        - totalComponents
+        - criticalCount
+        - highRiskCount
+        - avgCiiScore
+        - activeAlerts
+
+    AnalyzeComponentBody:
+      type: object
+      properties:
+        componentId:
+          type: integer
+        imageBase64:
+          type: string
+          description: Base64-encoded image data
+        mimeType:
+          type: string
+        currentCiiScore:
+          type: number
+        componentType:
+          type: string
+        ageMonths:
+          type: integer
+      required:
+        - componentId
+        - imageBase64
+        - mimeType
+        - currentCiiScore
+        - componentType
+        - ageMonths
+
+    AnalyzeComponentResponse:
+      type: object
+      properties:
+        analysis:
+          type: string
+          description: Detailed Gemini analysis text
+        suggestedCiiScore:
+          type: number
+        criticalOverride:
+          type: boolean
+        defectsDetected:
+          type: array
+          items:
+            type: string
+        recommendation:
+          type: string
+        certificationStatus:
+          type: string
+          description: "CERTIFIED_HEALTHY | FLAGGED_MODERATE | FLAGGED_CRITICAL | REPLACEMENT_REQUIRED"
+      required:
+        - analysis
+        - suggestedCiiScore
+        - criticalOverride
+        - defectsDetected
+        - recommendation
+        - certificationStatus
