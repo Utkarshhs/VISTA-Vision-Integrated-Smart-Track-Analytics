@@ -23,6 +23,7 @@ interface Assignment {
   componentType: string;
   componentCII: string;
   componentStatus: string;
+  hub: string;
   engineer: string;
   deadline: string;
   status: string;
@@ -98,8 +99,8 @@ export default function EngineerDashboard() {
   const taskComp = activeTask ? {
     componentId: getComponentId(activeTask.component),
     type: getComponentType(activeTask.component),
-    location: "Unknown Location",
-    ciiScore: 60
+    location: activeTask.hub || "Bangalore Central",
+    ciiScore: Number(activeTask.componentCII) || 60
   } : null;
 
   const handleAccept = async (broadcastId: string) => {
@@ -240,7 +241,7 @@ export default function EngineerDashboard() {
             </div>
             <h2 className="text-2xl font-display font-black text-green-400 tracking-wider mb-2">TASK COMPLETED</h2>
             <p className="text-muted-foreground text-sm mb-6">Your repair has been logged. The railway control team will review the analysis.</p>
-            <Button onClick={() => { setCompleted(false); setPhoto(null); setFeedback(""); }}
+            <Button onClick={() => { setCompleted(false); setPhoto(null); setFeedback(""); setAnalysis(null); }}
               variant="outline" className="border-white/10 text-white hover:bg-white/5 font-display uppercase tracking-wider text-sm">
               Back to Dashboard
             </Button>
@@ -330,7 +331,7 @@ export default function EngineerDashboard() {
               {photo ? (
                 <div className="relative">
                   <img src={photo} alt="Repair" className="w-full h-48 object-cover rounded-lg" />
-                  <button onClick={() => setPhoto(null)}
+                  <button onClick={() => { setPhoto(null); setAnalysis(null); }}
                     className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">Remove</button>
                 </div>
               ) : (

@@ -98,6 +98,7 @@ function getCurrentUserRole() {
 // ============ FIREBASE REALTIME STATE ============
 let firebaseDispatches = [];
 let firebaseAssignments = [];
+let firebaseInitialized = false;
 
 function setupFirebaseListeners() {
     if (typeof db !== 'undefined') {
@@ -131,12 +132,17 @@ function setupFirebaseListeners() {
                 }
             });
 
-            if (getCurrentUserRole() === 'controller' || getCurrentUserRole() === 'supervisor') {
-                // If it's the unified role, update both views in the background
-                renderEngineerList();
-                renderActiveAssignments();
-                renderPendingTasks(); 
-                renderControllerView();
+            // ALWAYS re-render everything when assignments change
+            renderRiskMap();
+            renderMetrics();
+            renderComponentList();
+            renderEngineerList();
+            renderActiveAssignments();
+
+            // First time Firebase data arrives — mark as initialized
+            if (!firebaseInitialized) {
+                firebaseInitialized = true;
+                console.log('[VISTA] Firebase initialized with', firebaseAssignments.length, 'assignments — filtered components from map.');
             }
         });
     }
@@ -246,6 +252,10 @@ function renderRiskMap() {
     riskMap.innerHTML = '';
 
     mockData.components.forEach(comp => {
+        // Hide component from map if it has ANY assignment (pending, in-progress, or completed)
+        const hasAssignment = firebaseAssignments.some(a => a.componentId === comp.id);
+        if (hasAssignment) return;
+
         const node = document.createElement('div');
         node.className = `component-node ${comp.status}`;
         node.innerHTML = `
@@ -258,10 +268,15 @@ function renderRiskMap() {
 }
 
 function renderMetrics() {
-    const critical = mockData.components.filter(c => c.status === 'critical').length;
-    const high = mockData.components.filter(c => c.status === 'high').length;
-    const moderate = mockData.components.filter(c => c.status === 'moderate').length;
-    const nominal = mockData.components.filter(c => c.status === 'nominal').length;
+    // Only count components that have NO assignment at all
+    const activeComponents = mockData.components.filter(comp => 
+        !firebaseAssignments.some(a => a.componentId === comp.id)
+    );
+
+    const critical = activeComponents.filter(c => c.status === 'critical').length;
+    const high = activeComponents.filter(c => c.status === 'high').length;
+    const moderate = activeComponents.filter(c => c.status === 'moderate').length;
+    const nominal = activeComponents.filter(c => c.status === 'nominal').length;
 
     document.getElementById('metricCritical').textContent = critical;
     document.getElementById('metricHigh').textContent = high;
@@ -419,6 +434,10 @@ function renderComponentList() {
     list.innerHTML = '';
 
     mockData.components.forEach(comp => {
+        // Hide component from list if it has ANY assignment
+        const hasAssignment = firebaseAssignments.some(a => a.componentId === comp.id);
+        if (hasAssignment) return;
+
         const item = document.createElement('div');
         item.className = `component-item ${comp.status}`;
         item.innerHTML = `
@@ -809,7 +828,7 @@ function openGeminiVerification(assign) {
         }
     }
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const promptText = `
     You are VISTA AI, a highly advanced railway predictive maintenance system.
