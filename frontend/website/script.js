@@ -2834,3 +2834,115 @@ document.addEventListener('change', function (e) {
         reader.readAsDataURL(file);
     }
 });
+
+// ============ LIVE SSE: AI INSPECTION REPORTS ============
+let aiReportCount = 0;
+
+function renderAIInspectionReport(data) {
+    const container = document.getElementById('aiInspectionReports');
+    const emptyMsg = document.getElementById('aiReportsEmpty');
+    if (!container) return;
+
+    // Remove empty placeholder
+    if (emptyMsg) emptyMsg.remove();
+
+    aiReportCount++;
+    const countEl = document.getElementById('aiReportCount');
+    if (countEl) countEl.textContent = `${aiReportCount} report${aiReportCount > 1 ? 's' : ''} received`;
+
+    const tagColor = data.tag === 'Critical' ? '#ef4444' :
+                     data.tag === 'Warning'  ? '#f59e0b' : '#22c55e';
+    const tagBg   = data.tag === 'Critical' ? 'rgba(239,68,68,0.1)' :
+                     data.tag === 'Warning'  ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)';
+
+    const ts = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+        background: rgba(255,255,255,0.04);
+        border: 1px solid ${tagColor}44;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        animation: fadeInUp 0.4s ease;
+    `;
+
+    card.innerHTML = `
+        ${data.image ? `
+        <div style="flex-shrink:0;">
+            <img src="${data.image}" alt="Inspection Photo"
+                style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid ${tagColor}66;cursor:pointer;"
+                onclick="this.style.width=this.style.width==='90px'?'260px':'90px';this.style.height=this.style.height==='90px'?'auto':'90px';"
+                title="Click to expand" />
+        </div>` : ''}
+        <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
+                <span style="font-family:'Orbitron',sans-serif;font-size:0.85em;font-weight:700;color:#e2e8f0;">${data.component_id || 'Unknown Component'}</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <span style="font-size:0.7em;background:${tagBg};color:${tagColor};border:1px solid ${tagColor}55;padding:3px 9px;border-radius:20px;font-weight:700;">${data.tag}</span>
+                    <span style="font-size:0.7em;color:#6b7280;">${ts}</span>
+                </div>
+            </div>
+            <p style="font-size:0.82em;color:#cbd5e1;margin:0 0 10px;line-height:1.5;">${data.summary || 'No summary available.'}</p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                <div style="font-size:0.76em;color:#9ca3af;">
+                    Confidence: <span style="color:${tagColor};font-weight:700;">${data.confidence_score}%</span>
+                </div>
+                <div style="font-size:0.76em;color:#9ca3af;">
+                    Action: <span style="color:#a78bfa;font-weight:600;">${(data.action_taken || '').replace(/_/g,' ')}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Prepend newest report at top
+    container.insertBefore(card, container.firstChild);
+
+    // Show notification
+    showNotification(`📸 New AI report: ${data.component_id} — ${data.tag}`, data.tag === 'Critical' ? 'error' : 'success');
+}
+
+function initSSEListener() {
+    const dotEl = document.getElementById('sseStatusDot');
+    const labelEl = document.getElementById('sseStatusLabel');
+
+    const setStatus = (connected) => {
+        if (!dotEl || !labelEl) return;
+        dotEl.style.background = connected ? '#4ade80' : '#ef4444';
+        dotEl.style.boxShadow = connected ? '0 0 6px #4ade80' : '0 0 6px #ef4444';
+        labelEl.style.color = connected ? '#4ade80' : '#ef4444';
+        labelEl.textContent = connected ? 'Live' : 'Disconnected';
+    };
+
+    try {
+        const es = new EventSource(`${API_BASE}/api/admin/dashboard/live-stream`);
+
+        es.onopen = () => setStatus(true);
+
+        es.onmessage = (event) => {
+            try {
+                const payload = JSON.parse(event.data);
+                if (payload.event === 'INSPECTION_SUBMITTED' && payload.data) {
+                    renderAIInspectionReport(payload.data);
+                }
+            } catch (e) {
+                console.warn('[SSE parse error]', e);
+            }
+        };
+
+        es.onerror = () => {
+            setStatus(false);
+            es.close();
+            // Reconnect after 5 seconds
+            setTimeout(initSSEListener, 5000);
+        };
+    } catch (e) {
+        console.warn('[SSE init error]', e);
+        setStatus(false);
+    }
+}
+
+// Start SSE listener on page load
+initSSEListener();

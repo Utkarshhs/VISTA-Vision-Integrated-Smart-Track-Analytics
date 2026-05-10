@@ -170,9 +170,12 @@ app.post('/api/engineer/sync', (req, res) => {
 app.post('/api/engineer/inspection/verify', async (req, res) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const { imageBase64, description, componentId } = req.body;
+    const { photoData, description, component_id } = req.body;
+    
+    // Support either property name for robustness
+    const imageData = photoData || req.body.imageBase64;
 
-    if (!imageBase64) {
+    if (!imageData) {
       throw new Error("No image data provided");
     }
 
@@ -195,8 +198,8 @@ Respond strictly in JSON format with these exact keys:
             { text: prompt },
             {
               inlineData: {
-                data: imageBase64.split(',')[1] || imageBase64,
-                mimeType: imageBase64.split(';')[0].split(':')[1] || 'image/jpeg'
+                data: imageData.split(',')[1] || imageData,
+                mimeType: imageData.split(';')[0].split(':')[1] || 'image/jpeg'
               }
             }
           ]
@@ -210,23 +213,38 @@ Respond strictly in JSON format with these exact keys:
     const resultText = response.text;
     const resultJson = JSON.parse(resultText);
 
-    res.json({
+    const report = {
       success: true,
       tag: resultJson.tag || 'Critical',
       summary: resultJson.summary || '[Gemini Vision Fallback]: Severe damage detected.',
       confidence_score: resultJson.confidence_score || 90,
-      action_taken: resultJson.action_taken || 'ESCALATED_TO_MANUAL_BOARD'
-    });
+      action_taken: resultJson.action_taken || 'ESCALATED_TO_MANUAL_BOARD',
+      component_id: component_id || 'Unknown Component',
+      image: imageData
+    };
+
+    // Broadcast to SSE clients
+    const ssePayload = JSON.stringify({ event: 'INSPECTION_SUBMITTED', data: report });
+    sseClients.forEach(client => client.res.write(`data: ${ssePayload}\n\n`));
+
+    res.json(report);
   } catch (error) {
     console.error('[Gemini API Error]', error);
     // Fallback response
-    res.json({
+    const fallbackReport = {
       success: true,
       tag: 'Critical',
       summary: '[Fallback]: Severe lateral cracking detected on the component surface. Immediate manual review required.',
       confidence_score: 85,
-      action_taken: 'ESCALATED_TO_MANUAL_BOARD'
-    });
+      action_taken: 'ESCALATED_TO_MANUAL_BOARD',
+      component_id: req.body.component_id || 'Unknown Component',
+      image: req.body.photoData || req.body.imageBase64 || ''
+    };
+
+    const ssePayload = JSON.stringify({ event: 'INSPECTION_SUBMITTED', data: fallbackReport });
+    sseClients.forEach(client => client.res.write(`data: ${ssePayload}\n\n`));
+
+    res.json(fallbackReport);
   }
 });
 
