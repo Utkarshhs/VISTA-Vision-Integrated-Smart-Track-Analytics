@@ -8,7 +8,7 @@ The platform is divided into two seamlessly integrated environments:
 
 ---
 
-## 🌟 Key Features
+##  Key Features
 
 ### Regional Controller Dashboard (Web)
 - **Interactive Sector Map:** Visualize railway components by location and Health Score (CII - Component Integrity Index).
@@ -24,7 +24,7 @@ The platform is divided into two seamlessly integrated environments:
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+##  Architecture & Tech Stack
 
 VISTA is built across two specialized codebases:
 
@@ -39,12 +39,12 @@ VISTA is built across two specialized codebases:
 - **Styling:** TailwindCSS with shadcn/ui components and Lucide-react icons.
 - **Backend/DB:** Firebase Firestore for synchronization with the Dashboard.
 
-### 🧠 AI Engine
+###  AI Engine
 - **Powered by Google Gemini (gemini-1.5-flash):** Both platforms utilize the Gemini Vision API for image analysis. The AI is prompted with strict JSON output schemas to generate highly structured, predictable diagnostics for railway infrastructure (e.g., detecting micro-fractures, fastener wear, ballast condition).
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js (v18+) for the Engineer PWA.
@@ -80,13 +80,13 @@ VISTA is built across two specialized codebases:
 
 ---
 
-## 🔒 Security Notes
+##  Security Notes
 - **API Keys:** The Gemini API keys have been completely removed from the source code. The PWA uses Vite environment variables (`.env.local`), and the dashboard uses a gitignored `config.js` or `localStorage`. **Never commit your API keys.**
 - **Demo Mode Resilience:** The Gemini integration includes graceful local-fallback mechanisms. If API quota is exceeded during a live presentation, the system will seamlessly intercept the 429 error and generate randomized, highly realistic placeholder data (scores between 70-85, minor threat generation) to ensure demonstrations never fail.
 
 ---
 
-## 👨‍💻 Deployment
+##  Deployment
 Both applications are optimized for edge deployment on platforms like Vercel:
 - **Dashboard:** Deploy as a static site.
 - **PWA:** Deploy using the Vite framework preset. Ensure you add `VITE_GEMINI_API_KEY` to your Vercel Environment Variables.
