@@ -418,25 +418,396 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Leaflet markers */
+/* ============ VISTA MAP SYSTEM ============ */
+
+/* Map wrapper */
+.vista-map-wrapper {
+    height: calc(100vh - 120px);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(230, 43, 43, 0.15);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), inset 0 0 60px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide default Leaflet controls */
+.leaflet-control-zoom { display: none !important; }
+.leaflet-control-attribution {
+    background: rgba(0, 0, 0, 0.6) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    font-size: 10px !important;
+    backdrop-filter: blur(4px) !important;
+    border-radius: 4px 0 0 0 !important;
+}
+.leaflet-control-attribution a { color: rgba(255, 255, 255, 0.5) !important; }
+
+/* Map Search Bar */
+.vista-map-search-bar {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    gap: 6px;
+}
+
+.vista-map-search-bar.dark-search {
+    background: rgba(15, 15, 20, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.vista-map-search-bar select, .vista-map-search-bar input, .vista-map-search-bar button {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: #1f2937;
+    padding: 6px 10px;
+}
+
+.dark-search select, .dark-search input, .dark-search button {
+    color: #e2e8f0;
+}
+
+.vista-map-search-bar select {
+    background: #f1f5f9;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.dark-search select {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-search select option {
+    background: #1e1e2d;
+    color: #e2e8f0;
+}
+
+.vista-map-search-bar input {
+    width: 240px;
+    border-left: 1px solid #e2e8f0;
+}
+
+.dark-search input {
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-search input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.vista-map-search-bar button {
+    background: #e62b2b;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+.vista-map-search-bar button:hover {
+    background: #dc2626;
+}
+
+.map-filter-divider {
+    width: 1px;
+    height: 24px;
+    background: #cbd5e1;
+    margin: 0 4px;
+}
+
+.dark-search .map-filter-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Unified Controls Panel */
+.vista-map-controls {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(10, 10, 18, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.vista-map-ctrl-btn {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.vista-map-ctrl-btn:hover {
+    background: rgba(230, 43, 43, 0.15);
+    color: #e62b2b;
+    transform: scale(1.05);
+}
+
+.vista-map-ctrl-btn:active {
+    transform: scale(0.95);
+}
+
+.vista-map-ctrl-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 2px 6px;
+}
+
+/* D-Pad Controls Container */
+.vista-dpad-container {
+    position: absolute;
+    bottom: 30%;
+    right: 16px;
+    z-index: 1000;
+    background: rgba(10, 10, 18, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.vista-dpad-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+}
+
+.dpad-btn {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+}
+
+.center-btn {
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 2px !important;
+}
+
+/* Map Legend */
+.vista-map-legend {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 1000;
+    background: rgba(10, 10, 18, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px 12px;
+    min-width: 140px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.vista-map-legend.hidden {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    pointer-events: none;
+}
+
+.vista-legend-title {
+    font-size: 0.65em;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.vista-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 2px 0;
+}
+
+.vista-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 4px currentColor;
+}
+
+.vista-legend-line {
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+.vista-legend-icon {
+    font-size: 1em;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.vista-legend-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 6px 0;
+}
+
+/* Sector Info Panel */
+.vista-sector-panel {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    background: rgba(10, 10, 18, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(230, 43, 43, 0.2);
+    border-radius: 14px;
+    padding: 20px;
+    width: 300px;
+    max-height: calc(100% - 32px);
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(230, 43, 43, 0.05);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.vista-sector-panel.visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.vista-sector-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85em;
+    transition: all 0.2s ease;
+}
+
+.vista-sector-close:hover {
+    background: rgba(230, 43, 43, 0.2);
+    color: #e62b2b;
+    border-color: rgba(230, 43, 43, 0.3);
+}
+
+/* Leaflet Popup Styling (Dark Theme) */
 .leaflet-popup-content-wrapper {
-    background: rgba(30, 30, 45, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(10, 10, 18, 0.92) !important;
+    border: 1px solid rgba(230, 43, 43, 0.2) !important;
     color: #e5e7eb !important;
-    border-radius: 6px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-    backdrop-filter: blur(8px) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 15px rgba(230, 43, 43, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    padding: 4px !important;
 }
 
 .leaflet-popup-content {
-    margin: 10px !important;
+    margin: 14px 16px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
 }
 
 .leaflet-popup-tip {
-    background: rgba(30, 30, 45, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(10, 10, 18, 0.92) !important;
+    border: 1px solid rgba(230, 43, 43, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
+.leaflet-popup-close-button {
+    color: rgba(255, 255, 255, 0.4) !important;
+    font-size: 22px !important;
+    padding: 6px 8px 0 0 !important;
+    transition: color 0.2s ease !important;
+}
+
+.leaflet-popup-close-button:hover {
+    color: #e62b2b !important;
+}
+
+/* Smooth popup animation */
+.leaflet-popup {
+    transition: opacity 0.25s ease;
+}
+
+/* Leaflet tooltip dark styling */
+.leaflet-tooltip {
+    background: rgba(10, 10, 18, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e5e7eb !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.leaflet-tooltip-top:before { border-top-color: rgba(10, 10, 18, 0.88) !important; }
+.leaflet-tooltip-bottom:before { border-bottom-color: rgba(10, 10, 18, 0.88) !important; }
+.leaflet-tooltip-left:before { border-left-color: rgba(10, 10, 18, 0.88) !important; }
+.leaflet-tooltip-right:before { border-right-color: rgba(10, 10, 18, 0.88) !important; }
+
+/* Station marker icon */
+.vista-station-icon {
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+    border-radius: 1px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vista-station-icon:hover {
+    transform: scale(1.5);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 1);
+}
+
+.vista-legend-square {
+    width: 8px;
+    height: 8px;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+/* Legacy marker-point classes (kept for backward compat) */
 .marker-point {
     width: 14px;
     height: 14px;
@@ -457,6 +828,17 @@ body {
 .marker-point.nominal, .marker-point.stable { background: #16a34a; color: #16a34a; }
 .marker-point.highly-reliable { background: #15803d; color: #15803d; }
 .marker-point.optimal { background: #06b6d4; color: #06b6d4; }
+
+/* Sector polygon pulse animation */
+@keyframes sectorPulse {
+    0%, 100% { fill-opacity: 0.08; }
+    50% { fill-opacity: 0.15; }
+}
+
+/* Sector panel scrollbar */
+.vista-sector-panel::-webkit-scrollbar { width: 4px; }
+.vista-sector-panel::-webkit-scrollbar-track { background: transparent; }
+.vista-sector-panel::-webkit-scrollbar-thumb { background: rgba(230, 43, 43, 0.3); border-radius: 4px; }
 
 
 

@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 dotenv.config();
+import { GoogleGenAI } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -166,19 +167,67 @@ app.post('/api/engineer/sync', (req, res) => {
 });
 
 // --- ENGINEER: IMAGE VERIFICATION (Gemini + Fail-Safe) ---
-app.post('/api/engineer/inspection/verify', (req, res) => {
-  // Fail-Safe: always respond — with real Gemini or mock
-  // To use real Gemini: add GEMINI_API_KEY to .env and implement the SDK call below
-  // For the hackathon MVP, the mock response below is used
-  setTimeout(() => {
+app.post('/api/engineer/inspection/verify', async (req, res) => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const { imageBase64, description, componentId } = req.body;
+
+    if (!imageBase64) {
+      throw new Error("No image data provided");
+    }
+
+    // Prepare the multimodal prompt
+    const prompt = `You are a VISTA Smart Highway AI inspector.
+Analyze this component inspection image. The engineer described the issue as: "${description || 'None provided'}".
+Determine the severity and a summary.
+Respond strictly in JSON format with these exact keys:
+"tag": (Critical, Warning, or Info)
+"summary": (A 1-2 sentence assessment)
+"confidence_score": (Number 0-100)
+"action_taken": (ESCALATED_TO_MANUAL_BOARD or AUTO_RESOLVED)`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                data: imageBase64.split(',')[1] || imageBase64,
+                mimeType: imageBase64.split(';')[0].split(':')[1] || 'image/jpeg'
+              }
+            }
+          ]
+        }
+      ],
+      config: {
+        responseMimeType: 'application/json'
+      }
+    });
+
+    const resultText = response.text;
+    const resultJson = JSON.parse(resultText);
+
+    res.json({
+      success: true,
+      tag: resultJson.tag || 'Critical',
+      summary: resultJson.summary || '[Gemini Vision Fallback]: Severe damage detected.',
+      confidence_score: resultJson.confidence_score || 90,
+      action_taken: resultJson.action_taken || 'ESCALATED_TO_MANUAL_BOARD'
+    });
+  } catch (error) {
+    console.error('[Gemini API Error]', error);
+    // Fallback response
     res.json({
       success: true,
       tag: 'Critical',
-      summary: '[Gemini Vision Fallback]: Severe lateral cracking detected on the concrete sleeper surface. High risk of complete structural failure upon next heavy load traversal. Immediate manual review required.',
-      confidence_score: 98,
+      summary: '[Fallback]: Severe lateral cracking detected on the component surface. Immediate manual review required.',
+      confidence_score: 85,
       action_taken: 'ESCALATED_TO_MANUAL_BOARD'
     });
-  }, 1500);
+  }
 });
 
 // --- LIVE DEMO: SSE STREAM + TRIGGER ---

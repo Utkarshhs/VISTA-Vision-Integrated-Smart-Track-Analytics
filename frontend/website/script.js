@@ -19,9 +19,9 @@ function getStatusCssClass(status) {
 
 function getStatusColor(status) {
     const map = {
-        'SEVERE_RISK': '#dc2626', 'SUBSTANDARD': '#ea580c',
-        'NEEDS_MAINTENANCE': '#ca8a04', 'STABLE': '#16a34a',
-        'HIGHLY_RELIABLE': '#15803d', 'OPTIMAL': '#06b6d4'
+        'SEVERE_RISK': '#ff2a2a', 'SUBSTANDARD': '#ff7a00',
+        'NEEDS_MAINTENANCE': '#ffbb00', 'STABLE': '#1eff44',
+        'HIGHLY_RELIABLE': '#00cc33', 'OPTIMAL': '#00eeff'
     };
     return map[status] || '#9ca3af';
 }
@@ -1283,21 +1283,294 @@ function renderReportView() {
 // ============ LEAFLET RENDERER ============
 let leafletInstance = null;
 let leafletLayerGroup = null;
+let sectorPolygonLayers = {};  // name -> L.polygon layer
+let componentMarkers = {};     // comp.id -> { marker, comp }
+let activeSectorName = null;
 
-const SECTORS_BBOX = {
-    'Bangalore Central': { color: '#3b82f6', bounds: [[12.92, 77.54], [13.02, 77.66]] },
-    'Yeshwantpur Zone': { color: '#8b5cf6', bounds: [[12.97, 77.49], [13.08, 77.56]] },
-    'Krishnarajapuram Zone': { color: '#ec4899', bounds: [[12.95, 77.66], [13.07, 77.78]] },
-    'Yelahanka Corridor': { color: '#14b8a6', bounds: [[13.07, 77.56], [13.45, 77.82]] },
-    'Tumkur Corridor': { color: '#f59e0b', bounds: [[13.05, 77.25], [13.45, 77.56]] },
-    'Whitefield Corridor': { color: '#6366f1', bounds: [[12.88, 77.66], [12.96, 77.90]] },
-    'Bangarapet Corridor': { color: '#f43f5e', bounds: [[12.75, 77.90], [13.07, 78.15]] },
-    'Electronic City Corridor': { color: '#84cc16', bounds: [[12.76, 77.62], [12.88, 77.90]] },
-    'Hosur Corridor': { color: '#10b981', bounds: [[12.52, 77.55], [12.76, 77.76]] },
-    'Kengeri Zone': { color: '#a855f7', bounds: [[12.88, 77.44], [12.99, 77.55]] },
-    'Mysore Corridor': { color: '#d946ef', bounds: [[12.60, 77.10], [12.92, 77.55]] },
-    'Devanahalli Corridor': { color: '#0ea5e9', bounds: [[13.30, 77.55], [13.55, 77.85]] }
+// Sector colors (matching AREA_META for consistency)
+const SECTOR_COLORS = {
+    'Bangalore Central': '#3b82f6',
+    'Yeshwantpur Zone': '#8b5cf6',
+    'Krishnarajapuram Zone': '#ec4899',
+    'Yelahanka Corridor': '#14b8a6',
+    'Tumkur Corridor': '#f59e0b',
+    'Whitefield Corridor': '#6366f1',
+    'Bangarapet Corridor': '#f43f5e',
+    'Electronic City Corridor': '#84cc16',
+    'Hosur Corridor': '#10b981',
+    'Kengeri Zone': '#a855f7',
+    'Mysore Corridor': '#d946ef',
+    'Devanahalli Corridor': '#0ea5e9',
+    'Regional Outer': '#64748b'
 };
+
+// Convex hull computation for organic polygon shapes
+function _computeConvexHull(points) {
+    if (points.length < 3) return points;
+    points.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    function cross(O, A, B) { return (A[0] - O[0]) * (B[1] - O[1]) - (A[1] - O[1]) * (B[0] - O[0]); }
+    const lower = [];
+    for (const p of points) {
+        while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+        lower.push(p);
+    }
+    const upper = [];
+    for (let i = points.length - 1; i >= 0; i--) {
+        const p = points[i];
+        while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+        upper.push(p);
+    }
+    upper.pop(); lower.pop();
+    return lower.concat(upper);
+}
+
+// Buffer the hull outward slightly for a more padded, organic feel
+function _bufferHull(hull, bufferDeg) {
+    if (hull.length < 3) return hull;
+    // Compute centroid
+    let cx = 0, cy = 0;
+    hull.forEach(p => { cx += p[0]; cy += p[1]; });
+    cx /= hull.length; cy /= hull.length;
+    // Push each point away from centroid by bufferDeg
+    return hull.map(p => {
+        const dx = p[0] - cx, dy = p[1] - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
+        return [p[0] + (dx / dist) * bufferDeg, p[1] + (dy / dist) * bufferDeg];
+    });
+}
+
+// Build sector polygons from component data (convex hull based)
+function _buildSectorPolygons() {
+    const sectorPts = {};
+    backendComponents.forEach(c => {
+        const s = c.location.sector;
+        if (!sectorPts[s]) sectorPts[s] = [];
+        sectorPts[s].push([c.location.lat, c.location.lng]);
+    });
+    
+    const rawHulls = {};
+    Object.entries(sectorPts).forEach(([name, pts]) => {
+        if (name === 'Regional Outer') return; // Handled separately
+        if (pts.length < 3) { rawHulls[name] = pts; return; }
+        const hull = _computeConvexHull(pts);
+        rawHulls[name] = _bufferHull(hull, 0.05); // ~5km buffer to fill map deeply
+    });
+
+    // If Turf.js is available, use it to remove overlapping regions so they share boundaries
+    if (typeof turf !== 'undefined') {
+        const processed = {};
+        const names = Object.keys(rawHulls);
+        let previousPolys = null;
+
+        names.forEach(name => {
+            const coords = rawHulls[name];
+            if (coords.length < 3) {
+                processed[name] = coords;
+                return;
+            }
+
+            // Convert to Turf Polygon [lng, lat] format
+            const turfCoords = coords.map(p => [p[1], p[0]]);
+            // Ensure closed ring
+            if (turfCoords[0][0] !== turfCoords[turfCoords.length-1][0] || turfCoords[0][1] !== turfCoords[turfCoords.length-1][1]) {
+                turfCoords.push([...turfCoords[0]]);
+            }
+            
+            let poly;
+            try {
+                poly = turf.polygon([turfCoords]);
+            } catch (e) {
+                processed[name] = coords;
+                return;
+            }
+
+            if (previousPolys) {
+                try {
+                    poly = turf.difference(poly, previousPolys);
+                } catch (e) {
+                    console.warn("Turf difference error", e);
+                }
+            }
+
+            if (poly) {
+                try {
+                    if (!previousPolys) previousPolys = poly;
+                    else previousPolys = turf.union(previousPolys, poly);
+                } catch (e) {}
+                
+                // Extract coordinates back to [lat, lng]
+                const finalCoords = [];
+                if (poly.geometry && poly.geometry.type === 'Polygon') {
+                    poly.geometry.coordinates[0].forEach(p => finalCoords.push([p[1], p[0]]));
+                    processed[name] = finalCoords;
+                } else if (poly.geometry && poly.geometry.type === 'MultiPolygon') {
+                    // Pick the largest polygon from the multipolygon
+                    let maxArea = -1;
+                    let bestCoords = null;
+                    poly.geometry.coordinates.forEach(polyCoords => {
+                        try {
+                            const tempPoly = turf.polygon([polyCoords[0]]);
+                            const area = turf.area(tempPoly);
+                            if (area > maxArea) {
+                                maxArea = area;
+                                bestCoords = polyCoords[0];
+                            }
+                        } catch (e) {}
+                    });
+                    if (bestCoords) {
+                        bestCoords.forEach(p => finalCoords.push([p[1], p[0]]));
+                        processed[name] = finalCoords;
+                    } else {
+                        processed[name] = coords;
+                    }
+                } else {
+                    processed[name] = coords;
+                }
+            } else {
+                // Completely eclipsed by previous polygons
+                processed[name] = coords; // fallback
+            }
+        });
+
+        // ── OUTLIER ZONES (Regional Outer) ──
+        if (sectorPts['Regional Outer'] && sectorPts['Regional Outer'].length > 0) {
+            let outlierPoly = null;
+            sectorPts['Regional Outer'].forEach(pt => {
+                try {
+                    // 2.5km buffer around each outlier point
+                    const circle = turf.circle([pt[1], pt[0]], 2.5, { units: 'kilometers', steps: 16 });
+                    if (!outlierPoly) outlierPoly = circle;
+                    else outlierPoly = turf.union(outlierPoly, circle);
+                } catch (e) {}
+            });
+
+            if (outlierPoly && previousPolys) {
+                try {
+                    outlierPoly = turf.difference(outlierPoly, previousPolys);
+                } catch (e) {}
+            }
+
+            if (outlierPoly) {
+                const finalMultiCoords = [];
+                if (outlierPoly.geometry && outlierPoly.geometry.type === 'Polygon') {
+                    const subCoords = [];
+                    outlierPoly.geometry.coordinates[0].forEach(p => subCoords.push([p[1], p[0]]));
+                    finalMultiCoords.push(subCoords);
+                } else if (outlierPoly.geometry && outlierPoly.geometry.type === 'MultiPolygon') {
+                    outlierPoly.geometry.coordinates.forEach(polyCoords => {
+                        const subCoords = [];
+                        polyCoords[0].forEach(p => subCoords.push([p[1], p[0]]));
+                        finalMultiCoords.push(subCoords);
+                    });
+                }
+                if (finalMultiCoords.length > 0) {
+                    processed['Regional Outer'] = finalMultiCoords;
+                }
+            }
+        }
+
+        return processed;
+    }
+
+    return rawHulls;
+}
+
+function _getSectorStats(sectorName) {
+    const comps = backendComponents.filter(c => c.location.sector === sectorName);
+    const total = comps.length;
+    const counts = {};
+    const statuses = ['SEVERE_RISK', 'SUBSTANDARD', 'NEEDS_MAINTENANCE', 'STABLE', 'HIGHLY_RELIABLE', 'OPTIMAL'];
+    statuses.forEach(s => counts[s] = comps.filter(c => c.status === s).length);
+    const avgCii = total > 0 ? (comps.reduce((s, c) => s + c.cii_score, 0) / total).toFixed(1) : '—';
+    return { total, counts, avgCii };
+}
+
+function _showSectorPanel(sectorName, color) {
+    const panel = document.getElementById('vistaSectorPanel');
+    const content = document.getElementById('vistaSectorContent');
+    if (!panel || !content) return;
+
+    const stats = _getSectorStats(sectorName);
+    const statusInfo = [
+        { key: 'SEVERE_RISK', label: 'Severe Risk', color: '#dc2626' },
+        { key: 'SUBSTANDARD', label: 'Substandard', color: '#ea580c' },
+        { key: 'NEEDS_MAINTENANCE', label: 'Needs Maint.', color: '#ca8a04' },
+        { key: 'STABLE', label: 'Stable', color: '#16a34a' },
+        { key: 'HIGHLY_RELIABLE', label: 'Highly Reliable', color: '#15803d' },
+        { key: 'OPTIMAL', label: 'Optimal', color: '#06b6d4' }
+    ];
+
+    let barsHtml = '';
+    statusInfo.forEach(s => {
+        const count = stats.counts[s.key] || 0;
+        const pct = stats.total > 0 ? (count / stats.total * 100) : 0;
+        barsHtml += `
+            <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:0.78em;margin-bottom:3px;">
+                    <span style="color:rgba(255,255,255,0.6)">${s.label}</span>
+                    <span style="color:${s.color};font-weight:600">${count}</span>
+                </div>
+                <div style="background:rgba(255,255,255,0.06);height:4px;border-radius:2px;overflow:hidden;">
+                    <div style="background:${s.color};width:${pct}%;height:100%;border-radius:2px;transition:width 0.6s ease;"></div>
+                </div>
+            </div>
+        `;
+    });
+
+    content.innerHTML = `
+        <div style="margin-bottom:16px;">
+            <div style="font-size:0.68em;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);margin-bottom:6px;">Sector</div>
+            <div style="font-size:1.15em;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+                <span style="width:10px;height:10px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color};flex-shrink:0;"></span>
+                ${sectorName}
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+            <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;text-align:center;">
+                <div style="font-size:1.5em;font-weight:700;color:#e62b2b;">${stats.total}</div>
+                <div style="font-size:0.72em;color:rgba(255,255,255,0.4);margin-top:2px;">Components</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;text-align:center;">
+                <div style="font-size:1.5em;font-weight:700;color:${color};">${stats.avgCii}</div>
+                <div style="font-size:0.72em;color:rgba(255,255,255,0.4);margin-top:2px;">Avg CII</div>
+            </div>
+        </div>
+        <div style="font-size:0.68em;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);margin-bottom:10px;">Status Breakdown</div>
+        ${barsHtml}
+    `;
+
+    panel.classList.add('visible');
+    activeSectorName = sectorName;
+}
+
+function closeSectorPanel() {
+    const panel = document.getElementById('vistaSectorPanel');
+    if (panel) panel.classList.remove('visible');
+
+    // Reset polygon highlight
+    if (activeSectorName && sectorPolygonLayers[activeSectorName]) {
+        const color = SECTOR_COLORS[activeSectorName] || '#3b82f6';
+        sectorPolygonLayers[activeSectorName].setStyle({
+            weight: 1.5,
+            fillOpacity: 0.08,
+            opacity: 0.6
+        });
+    }
+    activeSectorName = null;
+}
+
+function toggleMapLegend() {
+    const legend = document.getElementById('vistaMapLegend');
+    if (legend) legend.classList.toggle('hidden');
+}
+
+function vistaMapZoomIn() {
+    if (leafletInstance) leafletInstance.zoomIn(1, { animate: true });
+}
+
+function vistaMapZoomOut() {
+    if (leafletInstance) leafletInstance.zoomOut(1, { animate: true });
+}
 
 async function renderLeafletView() {
     const mapContainer = document.getElementById('leafletContainer');
@@ -1306,60 +1579,147 @@ async function renderLeafletView() {
     // Initialize Leaflet if not done already
     if (!leafletInstance) {
         leafletInstance = L.map('leafletContainer', {
-            maxBounds: [[12.4, 77.0], [13.7, 78.3]], // Lock to Bangalore region
+            maxBounds: [[12.2, 76.8], [13.8, 78.4]],
             maxBoundsViscosity: 1.0,
-            minZoom: 9
-        }).setView([12.9716, 77.5946], 10); // Bangalore
+            minZoom: 9,
+            zoomControl: false, // We use custom controls
+            zoomAnimation: true,
+            fadeAnimation: true,
+            markerZoomAnimation: true
+        }).setView([12.9716, 77.5946], 10);
 
-        // Use a light theme tile layer
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        // ── DARK THEME TILE LAYER ──
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
             subdomains: 'abcd',
-            maxZoom: 20
+            maxZoom: 19
         }).addTo(leafletInstance);
 
         leafletLayerGroup = L.layerGroup().addTo(leafletInstance);
 
-        // Draw Sector Polygons
-        Object.entries(SECTORS_BBOX).forEach(([name, data]) => {
-            L.rectangle(data.bounds, {
-                color: data.color,
-                weight: 2,
-                opacity: 0.8,
-                fillColor: data.color,
-                fillOpacity: 0.1
-            }).bindTooltip(name, { permanent: false, direction: "center" })
-                .addTo(leafletInstance);
+        // ── DRAW ORGANIC SECTOR POLYGONS (Convex Hulls) ──
+        const sectorHulls = _buildSectorPolygons();
+        Object.entries(sectorHulls).forEach(([name, coords]) => {
+            if (coords.length < 3) return;
+            const color = SECTOR_COLORS[name] || '#3b82f6';
+            const polygon = L.polygon(coords, {
+                color: color,
+                weight: 1.5,
+                opacity: 0.6,
+                fillColor: color,
+                fillOpacity: 0.12,
+                dashArray: '6 3',
+                smoothFactor: 1.5,
+                className: 'vista-sector-polygon'
+            });
+
+            polygon.bindTooltip(name, {
+                permanent: false,
+                direction: 'center',
+                className: 'vista-sector-tooltip'
+            });
+
+            polygon.on('click', function () {
+                // Zoom to fit this polygon precisely
+                leafletInstance.fitBounds(polygon.getBounds(), {
+                    padding: [40, 40],
+                    animate: true,
+                    duration: 0.8,
+                    maxZoom: 14
+                });
+                // Highlight this polygon
+                Object.entries(sectorPolygonLayers).forEach(([n, p]) => {
+                    if (n !== name) {
+                        p.setStyle({ weight: 1.5, fillOpacity: 0.04, opacity: 0.3 });
+                    }
+                });
+                polygon.setStyle({ weight: 2.5, fillOpacity: 0.15, opacity: 0.9 });
+                // Show info panel
+                _showSectorPanel(name, color);
+            });
+
+            polygon.on('mouseover', function () {
+                if (activeSectorName !== name) {
+                    polygon.setStyle({ fillOpacity: 0.12, weight: 2 });
+                }
+            });
+
+            polygon.on('mouseout', function () {
+                if (activeSectorName !== name) {
+                    polygon.setStyle({ fillOpacity: 0.12, weight: 1.5, opacity: 0.6 });
+                }
+            });
+
+            polygon.addTo(leafletInstance);
+            sectorPolygonLayers[name] = polygon;
         });
 
-        // Fetch and Draw Railway Tracks & Stations
+        // ── FETCH AND DRAW RAILWAY TRACKS & STATIONS ──
         try {
-            const response = await fetch(`${window.VISTA_CONFIG.API_BASE_URL}/data/railway-network.geojson`);
+            const response = await fetch(`${API_BASE}/data/railway-network.geojson`);
             if (response.ok) {
                 const geojson = await response.json();
                 L.geoJSON(geojson, {
-                    style: {
-                        color: '#475569', // Slate grey for tracks
-                        weight: 2,
-                        opacity: 0.7
+                    // Filter: exclude metro features entirely
+                    filter: function (feature) {
+                        const props = feature.properties || {};
+                        // Exclude metro stations
+                        if (props.subway === 'yes') return false;
+                        if ((props.network || '').toLowerCase().includes('metro')) return false;
+                        return true;
+                    },
+                    style: function (feature) {
+                        // Style railway tracks with a darker grey look
+                        const props = feature.properties || {};
+                        const isMain = props.usage === 'main';
+                        return {
+                            color: isMain ? '#64748b' : '#475569',
+                            weight: isMain ? 4 : 2.5,
+                            opacity: isMain ? 0.9 : 0.6,
+                            lineCap: 'round',
+                            lineJoin: 'round'
+                        };
                     },
                     pointToLayer: function (feature, latlng) {
-                        // Render stations as small black squares
-                        if (feature.properties && feature.properties.railway === 'station') {
-                            const stationName = feature.properties.name || 'Station';
+                        const props = feature.properties || {};
+                        // Only render non-metro stations
+                        if (props.railway === 'station') {
+                            const stationName = props.name || 'Station';
                             const icon = L.divIcon({
-                                className: 'station-square-icon',
-                                html: `<div style="width: 8px; height: 8px; background: #000; border: 1px solid #fff;"></div>`,
-                                iconSize: [10, 10],
-                                iconAnchor: [5, 5]
+                                className: 'vista-station-icon',
+                                html: '',
+                                iconSize: [6.7, 6.7],
+                                iconAnchor: [3.35, 3.35]
                             });
-                            return L.marker(latlng, { icon: icon }).bindTooltip(stationName, { direction: 'top', offset: [0, -5] });
+                            return L.marker(latlng, { icon: icon })
+                                .bindTooltip(stationName, {
+                                    direction: 'top',
+                                    offset: [0, -6],
+                                    className: 'vista-station-tooltip'
+                                });
+                        }
+                        return null;
+                    },
+                    onEachFeature: function (feature, layer) {
+                        // Add a second shadow line underneath main tracks for subtle glow effect
+                        if (feature.geometry.type === 'LineString' && feature.properties.usage === 'main') {
+                            const shadowLine = L.geoJSON(feature, {
+                                style: {
+                                    color: '#94a3b8',
+                                    weight: 8,
+                                    opacity: 0.15,
+                                    lineCap: 'round',
+                                    lineJoin: 'round'
+                                }
+                            });
+                            shadowLine.addTo(leafletInstance);
+                            shadowLine.bringToBack();
                         }
                     }
                 }).addTo(leafletInstance);
             }
         } catch (e) {
-            console.error("Failed to load track geojson", e);
+            console.error('[VISTA] Failed to load track geojson', e);
         }
     }
 
@@ -1368,38 +1728,134 @@ async function renderLeafletView() {
         if (leafletInstance) leafletInstance.invalidateSize();
     }, 100);
 
-    // Clear existing markers
+    // Clear existing component markers
     if (leafletLayerGroup) leafletLayerGroup.clearLayers();
+    componentMarkers = {};
 
-    // Map ALL components using Canvas-based circleMarkers for performance
+    // ── MAP ALL COMPONENTS ──
     backendComponents.forEach(comp => {
         if (!comp.location || !comp.location.lng || !comp.location.lat) return;
 
         const color = getStatusColor(comp.status);
+        const statusLabel = getStatusLabel(comp.status);
+        const agYrs = (comp.age_months / 12).toFixed(1);
+
         const popupContent = `
-            <div style="font-weight:bold;color:#7C3AED;margin-bottom:5px;">${comp.id}</div>
-            <div>${comp.type}</div>
-            <div style="color:${color};margin-top:5px;">CII: ${comp.cii_score} - ${getStatusLabel(comp.status)}</div>
+            <div style="min-width:210px;">
+                <div style="font-weight:700;color:#e62b2b;font-size:1.2em;margin-bottom:7px;font-family:'Orbitron',sans-serif;letter-spacing:0.5px;">${comp.id}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+                    <span style="color:rgba(255,255,255,0.6);font-size:1.05em;">${comp.type}</span>
+                    <span style="font-size:0.9em;color:rgba(255,255,255,0.4);">${agYrs} yrs</span>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:9px 10px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.95em;color:rgba(255,255,255,0.5);">CII Score</span>
+                    <span style="font-weight:700;font-size:1.4em;color:${color};">${comp.cii_score}</span>
+                </div>
+                <div style="margin-top:8px;text-align:center;font-size:0.9em;padding:5px 10px;border-radius:5px;background:${color}18;color:${color};font-weight:600;border:1px solid ${color}33;">${statusLabel}</div>
+            </div>
         `;
 
-        const marker = L.circleMarker([comp.location.lat, comp.location.lng], {
-            radius: 5,
+        // Use L.circle (radius in meters) instead of L.circleMarker (radius in pixels)
+        // This ensures the dots scale geographically as you zoom in/out
+        const marker = L.circle([comp.location.lat, comp.location.lng], {
+            radius: 20, // 20 meters radius
             fillColor: color,
-            color: '#ffffff',
-            weight: 1,
-            opacity: 1,
+            color: color,
+            weight: 0.5,
+            opacity: 0.9,
             fillOpacity: 0.8
         })
-            .bindPopup(popupContent)
+            .bindPopup(popupContent, {
+                maxWidth: 250,
+                className: 'vista-comp-popup',
+                offset: [0, -10]
+            })
             .on('click', () => showComponentDispatch(comp));
 
+        componentMarkers[comp.id] = { marker, comp };
         marker.addTo(leafletLayerGroup);
+    });
+
+    // Populate the dropdown filters dynamically
+    const filterSelect = document.getElementById('mapFilterCorridor');
+    if (filterSelect) {
+        filterSelect.innerHTML = '<option value="ALL">All Corridors</option>';
+        Object.keys(sectorPolygonLayers).forEach(name => {
+            filterSelect.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    }
+}
+
+// ============ MAP SEARCH AND FILTER LOGIC ============
+
+function handleMapSearch(e) {
+    if (e.key === 'Enter') executeMapSearch();
+}
+
+function executeMapSearch() {
+    const query = (document.getElementById('mapSearchInput').value || '').toLowerCase().trim();
+    if (!query) return;
+
+    const compId = Object.keys(componentMarkers).find(id => id.toLowerCase().includes(query));
+    if (compId) {
+        const { marker, comp } = componentMarkers[compId];
+        // Zoom to street level (16) instead of maximum
+        leafletInstance.flyTo([comp.location.lat, comp.location.lng], 16, { animate: true, duration: 1.5 });
+        setTimeout(() => {
+            marker.openPopup();
+        }, 1500);
+    } else {
+        showNotification('Component not found.', 'error');
+    }
+}
+
+function applyMapFilters() {
+    const corridorVal = document.getElementById('mapFilterCorridor').value;
+    const statusVal = document.getElementById('mapFilterStatus').value;
+
+    // Filter polygons
+    Object.entries(sectorPolygonLayers).forEach(([name, poly]) => {
+        if (corridorVal === 'ALL' || corridorVal === name) {
+            if (!leafletInstance.hasLayer(poly)) poly.addTo(leafletInstance);
+        } else {
+            if (leafletInstance.hasLayer(poly)) leafletInstance.removeLayer(poly);
+        }
+    });
+
+    // Filter points
+    Object.values(componentMarkers).forEach(({ marker, comp }) => {
+        const matchCorridor = (corridorVal === 'ALL' || comp.location.sector === corridorVal);
+        const matchStatus = (statusVal === 'ALL' || comp.status === statusVal);
+
+        if (matchCorridor && matchStatus) {
+            if (!leafletLayerGroup.hasLayer(marker)) leafletLayerGroup.addLayer(marker);
+        } else {
+            if (leafletLayerGroup.hasLayer(marker)) leafletLayerGroup.removeLayer(marker);
+        }
     });
 }
 
 function recenterMap() {
     if (leafletInstance) {
-        leafletInstance.setView([12.9716, 77.5946], 10, { animate: true });
+        // Close sector panel if open
+        closeSectorPanel();
+        // Reset all polygon styles
+        Object.entries(sectorPolygonLayers).forEach(([name, p]) => {
+            const color = SECTOR_COLORS[name] || '#3b82f6';
+            p.setStyle({ weight: 1.5, fillOpacity: 0.08, opacity: 0.6 });
+        });
+        leafletInstance.flyTo([12.9716, 77.5946], 10, { animate: true, duration: 1.0 });
+    }
+}
+
+function vistaMapPan(direction) {
+    if (!leafletInstance) return;
+    const offset = 200; // pixels to pan
+    switch(direction) {
+        case 'up': leafletInstance.panBy([0, -offset], { animate: true, duration: 0.4 }); break;
+        case 'down': leafletInstance.panBy([0, offset], { animate: true, duration: 0.4 }); break;
+        case 'left': leafletInstance.panBy([-offset, 0], { animate: true, duration: 0.4 }); break;
+        case 'right': leafletInstance.panBy([offset, 0], { animate: true, duration: 0.4 }); break;
     }
 }
 

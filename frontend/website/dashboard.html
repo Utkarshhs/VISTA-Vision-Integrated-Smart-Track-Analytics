@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <script src="auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script>
         // Verify authentication before loading dashboard
         if (!isAuthenticated()) {
@@ -88,41 +89,44 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 20px; height: 580px;">
-                        <!-- Component Database -->
-                        <div class="card"
-                            style="display: flex; flex-direction: column; flex: 1; min-width: 0; overflow: hidden;">
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; flex-shrink: 0;">
-                                <h3 style="margin: 0;">Component Database</h3>
-                                <div class="view-controls" style="margin: 0; display: flex; gap: 5px;">
-                                    <select id="dbSortOrder" class="filter-select" onchange="renderComponentDatabase()"
-                                        style="padding: 5px 10px;">
-                                        <option value="asc">Ascending (ID)</option>
-                                        <option value="desc">Descending (ID)</option>
-                                    </select>
-                                    <select id="dbStatusFilter" class="filter-select"
-                                        onchange="renderComponentDatabase()" style="padding: 5px 10px;">
-                                        <option value="">All Statuses</option>
-                                        <option value="SEVERE_RISK">Severe Risk</option>
-                                        <option value="SUBSTANDARD">Substandard</option>
-                                        <option value="NEEDS_MAINTENANCE">Needs Maintenance</option>
-                                        <option value="STABLE">Stable</option>
-                                        <option value="HIGHLY_RELIABLE">Highly Reliable</option>
-                                        <option value="OPTIMAL">Optimal</option>
-                                    </select>
+                    <div style="display: flex; gap: 20px; align-items: stretch;">
+                        <!-- Component Database Wrapper -->
+                        <div style="flex: 1; position: relative; min-width: 0;">
+                            <!-- Component Database Card -->
+                            <div class="card"
+                                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; overflow: hidden; margin: 0;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; flex-shrink: 0;">
+                                    <h3 style="margin: 0;">Component Database</h3>
+                                    <div class="view-controls" style="margin: 0; display: flex; gap: 5px;">
+                                        <select id="dbSortOrder" class="filter-select" onchange="renderComponentDatabase()"
+                                            style="padding: 5px 10px;">
+                                            <option value="asc">Ascending (ID)</option>
+                                            <option value="desc">Descending (ID)</option>
+                                        </select>
+                                        <select id="dbStatusFilter" class="filter-select"
+                                            onchange="renderComponentDatabase()" style="padding: 5px 10px;">
+                                            <option value="">All Statuses</option>
+                                            <option value="SEVERE_RISK">Severe Risk</option>
+                                            <option value="SUBSTANDARD">Substandard</option>
+                                            <option value="NEEDS_MAINTENANCE">Needs Maintenance</option>
+                                            <option value="STABLE">Stable</option>
+                                            <option value="HIGHLY_RELIABLE">Highly Reliable</option>
+                                            <option value="OPTIMAL">Optimal</option>
+                                        </select>
+                                    </div>
                                 </div>
+                                <div id="componentDatabaseList"
+                                    style="flex: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 10px;">
+                                    <!-- Generated dynamically -->
+                                </div>
+                                <div id="dbInfiniteSentinel" style="height: 10px; flex-shrink: 0;"></div>
                             </div>
-                            <div id="componentDatabaseList"
-                                style="flex: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 10px;">
-                                <!-- Generated dynamically -->
-                            </div>
-                            <div id="dbInfiniteSentinel" style="height: 10px; flex-shrink: 0;"></div>
                         </div>
 
                         <!-- Sector Metrics -->
                         <div class="card"
-                            style="display: flex; flex-direction: column; flex: 1; min-width: 0; overflow-y: auto;">
+                            style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
                             <h3>Sector Metrics</h3>
                             <div class="metric-chart-wrapper" style="height: 300px; flex-shrink: 0;">
                                 <canvas id="sectorMetricChart"></canvas>
@@ -180,14 +184,94 @@
 
                 <!-- Leaflet Map View -->
                 <section id="mapView" class="view" style="height: 100%;">
-                    <div class="view-header">
+                    <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 0;">
                         <h2>Live Radar Map</h2>
+                        <!-- Map Search & Filter Bar (Top Right out of map) -->
+                        <div class="vista-map-search-bar dark-search">
+                            <input type="text" id="mapSearchInput" placeholder="Search component ID (e.g. trk-123)..." onkeyup="handleMapSearch(event)">
+                            <button onclick="executeMapSearch()">Search</button>
+                            
+                            <div class="map-filter-divider"></div>
+                            
+                            <select id="mapFilterCorridor" onchange="applyMapFilters()">
+                                <option value="ALL">All Corridors</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                            
+                            <select id="mapFilterStatus" onchange="applyMapFilters()">
+                                <option value="ALL">All Statuses</option>
+                                <option value="SEVERE_RISK">Severe Risk</option>
+                                <option value="SUBSTANDARD">Substandard</option>
+                                <option value="NEEDS_MAINTENANCE">Needs Maintenance</option>
+                                <option value="STABLE">Stable</option>
+                                <option value="HIGHLY_RELIABLE">Highly Reliable</option>
+                                <option value="OPTIMAL">Optimal</option>
+                            </select>
+                        </div>
                     </div>
-                    <div style="height: calc(100vh - 120px); border-radius: 8px; overflow: hidden; position: relative;">
-                        <button id="recenterMapBtn" onclick="recenterMap()"
-                            style="position: absolute; top: 20px; right: 20px; z-index: 1000; background: #ffffff; color: #1e1e2d; border: 1px solid #d1d5db; border-radius: 4px; padding: 8px 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            🎯 Recenter
-                        </button>
+                    <div id="mapWrapper" class="vista-map-wrapper">
+                        <!-- Unified Map Controls (Left Side) -->
+                        <div class="vista-map-controls" style="top: 16px;">
+                            <button class="vista-map-ctrl-btn" onclick="vistaMapZoomIn()" title="Zoom In">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                            <button class="vista-map-ctrl-btn" onclick="vistaMapZoomOut()" title="Zoom Out">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                            <button class="vista-map-ctrl-btn" onclick="recenterMap()" title="Recenter Map">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+                            </button>
+                            <div class="vista-map-ctrl-divider"></div>
+                            <button class="vista-map-ctrl-btn" onclick="toggleMapLegend()" title="Toggle Legend" id="legendToggleBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- D-Pad Controls (Left Middle-Bottom) -->
+                        <div class="vista-dpad-container">
+                            <div class="vista-dpad-row">
+                                <button class="vista-map-ctrl-btn dpad-btn" onclick="vistaMapPan('up')" title="Pan Up">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                                </button>
+                            </div>
+                            <div class="vista-dpad-row">
+                                <button class="vista-map-ctrl-btn dpad-btn" onclick="vistaMapPan('left')" title="Pan Left">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
+                                <button class="vista-map-ctrl-btn center-btn" onclick="recenterMap()" title="Recenter Map">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+                                </button>
+                                <button class="vista-map-ctrl-btn dpad-btn" onclick="vistaMapPan('right')" title="Pan Right">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                            </div>
+                            <div class="vista-dpad-row">
+                                <button class="vista-map-ctrl-btn dpad-btn" onclick="vistaMapPan('down')" title="Pan Down">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Map Legend (collapsible) -->
+                        <div class="vista-map-legend" id="vistaMapLegend">
+                            <div class="vista-legend-title">Status Legend</div>
+                            <div class="vista-legend-item"><span class="vista-legend-dot" style="background:#dc2626"></span>Severe Risk</div>
+                            <div class="vista-legend-item"><span class="vista-legend-dot" style="background:#ea580c"></span>Substandard</div>
+                            <div class="vista-legend-item"><span class="vista-legend-dot" style="background:#ca8a04"></span>Needs Maintenance</div>
+                            <div class="vista-legend-item"><span class="vista-legend-dot" style="background:#16a34a"></span>Stable</div>
+                            <div class="vista-legend-item"><span class="vista-legend-dot" style="background:#15803d"></span>Highly Reliable</div>
+                            <div class="vista-legend-item"><span class="vista-legend-dot" style="background:#06b6d4"></span>Optimal</div>
+                            <div class="vista-legend-divider"></div>
+                            <div class="vista-legend-item"><span class="vista-legend-line" style="background:linear-gradient(90deg,#e62b2b,#ff6b4a)"></span>Railway Tracks</div>
+                            <div class="vista-legend-item"><span class="vista-legend-square"></span>Railway Station</div>
+                        </div>
+
+                        <!-- Sector Info Panel (shown on polygon click) -->
+                        <div class="vista-sector-panel" id="vistaSectorPanel">
+                            <button class="vista-sector-close" onclick="closeSectorPanel()">✕</button>
+                            <div id="vistaSectorContent"></div>
+                        </div>
+
                         <div id="leafletContainer" style="width: 100%; height: 100%;"></div>
                     </div>
                 </section>
